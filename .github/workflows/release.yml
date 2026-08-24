@@ -62,3 +62,20 @@ jobs:
           } else {
             gh release create $tag @assets --title $tag --generate-notes
           }
+
+      - name: 同步固定库链清单到主分支
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          $sha = gh api "repos/$env:GITHUB_REPOSITORY/contents/pluginmaster.json?ref=main" --jq '.sha'
+          $content = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Resolve-Path './pluginmaster.json')))
+          $payload = @{
+            message = "更新库链清单至 $env:RELEASE_TAG"
+            content = $content
+            sha = $sha
+            branch = 'main'
+          } | ConvertTo-Json
+
+          $payload | gh api "repos/$env:GITHUB_REPOSITORY/contents/pluginmaster.json" --method PUT --input -

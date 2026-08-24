@@ -1,0 +1,31 @@
+[
+  {
+    "Author": "SaMo, Karriis",
+    "Name": "PvP 战绩统计（中文增强版）",
+    "InternalName": "PvpStatsCN",
+    "AssemblyVersion": "2.7.0.3",
+    "Description": "基于 PvP Tracker 的简体中文增强版本。记录、浏览和筛选水晶冲突、纷争前线及烈羽争锋的历史对局；查看对局计分板，以及胜率、场均伤害等汇总统计。重要：请在进入 PvP 对局前启用插件，进入对局后不要启用、禁用或重载插件。",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
+    "Tags": [
+      "pvp",
+      "statistics",
+      "战绩",
+      "中文"
+    ],
+    "DalamudApiLevel": 15,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "CanUnloadAsync": false,
+    "LoadPriority": 0,
+    "IconUrl": "https://raw.githubusercontent.com/Karriis/PvpStatsCN/main/images/icon.png",
+    "Punchline": "记录并分析 PvP 对局与战绩。",
+    "Changelog": "* 增加进入 PvP 对局后不要启用、禁用或重载插件的醒目提示。\n* 汉化职业名称、地图名称、阵营名称及纷争前线结算页剩余字段。",
+    "AcceptsFeedback": true,
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "DownloadLinkInstall": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
+    "LastUpdate": "1787596312"
+  }
+]
