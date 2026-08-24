@@ -24,4 +24,4 @@ $entry['DownloadLinkInstall'] = "$releaseBaseUrl/latest.zip"
 $entry['DownloadLinkUpdate'] = "$releaseBaseUrl/latest.zip"
 $entry['LastUpdate'] = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds().ToString()
 
-@($entry) | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
+ConvertTo-Json -InputObject @($entry) -Depth 20 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
