@@ -98,6 +98,13 @@ internal class ConfigWindow : Window {
 
         ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("General"));
 
+        ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
+        ImGui.TextColored(
+            new Vector4(1f, 0.35f, 0.25f, 1f),
+            Loc.T("Important: Enable the plugin before entering a PvP match. Do not enable, disable, or reload it after entering; otherwise commands may stop working and the match record will be incomplete."));
+        ImGui.PopTextWrapPos();
+        ImGui.Spacing();
+
         var language = (int)_plugin.Configuration.UiLanguage;
         string[] languageOptions = [Loc.T("Auto"), Loc.T("English"), Loc.T("Simplified Chinese")];
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 4f);

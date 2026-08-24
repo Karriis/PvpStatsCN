@@ -256,7 +256,12 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
             2 => Plugin.Configuration.Colors.Loss,
             _ => Plugin.Configuration.Colors.Other,
         };
-        string resultText = placement != null ? ImGuiHelper.AddOrdinal((int)placement + 1).ToUpper() : "???";
+        string resultText = placement switch {
+            0 => Loc.T("1ST"),
+            1 => Loc.T("2ND"),
+            2 => Loc.T("3RD"),
+            _ => "???",
+        };
         if(windowCenter) {
             ImGuiHelpers.CenterCursorForText(resultText);
         } else {
@@ -266,6 +271,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
     }
 
     private void DrawRowDescription(string desc) {
+        desc = Loc.T(desc);
         ImGuiHelper.RightAlignCursor2(desc, -5f * ImGuiHelpers.GlobalScale);
         ImGui.TextUnformatted(desc);
     }
@@ -312,7 +318,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         ImGui.TableSetupColumn(Loc.T("Assists"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Assists").GetHashCode());
         if(hasDamageToNPCs) {
             ImGui.TableSetupColumn(Loc.T("Damage to PCs"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToPCs".GetHashCode());
-            var npcDamageName = Match.Arena == FrontlineMap.FieldsOfGlory ? "Ice Damage" : "Drone Damage";
+            var npcDamageName = Loc.T(Match.Arena == FrontlineMap.FieldsOfGlory ? "Ice Damage" : "Drone Damage");
             ImGui.TableSetupColumn(npcDamageName, widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToOther".GetHashCode());
             ImGui.TableSetupColumn(Loc.T("Damage Dealt"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageDealt".GetHashCode());
         } else {

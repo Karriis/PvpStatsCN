@@ -14,13 +14,20 @@ internal class SplashWindow : Window {
     public SplashWindow(Plugin plugin) : base(Loc.T("PvP Tracker")) {
         _plugin = plugin;
         SizeConstraints = new WindowSizeConstraints {
-            MinimumSize = new Vector2(185, 175),
-            MaximumSize = new Vector2(185, 175)
+            MinimumSize = new Vector2(460, 235),
+            MaximumSize = new Vector2(460, 235)
         };
         Flags |= ImGuiWindowFlags.NoResize;
     }
 
     public override void Draw() {
+        ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
+        ImGui.TextColored(
+            new Vector4(1f, 0.35f, 0.25f, 1f),
+            Loc.T("Important: Enable the plugin before entering a PvP match. Do not enable, disable, or reload it after entering; otherwise commands may stop working and the match record will be incomplete."));
+        ImGui.PopTextWrapPos();
+        ImGui.Separator();
+
         ImGui.TextUnformatted(Loc.T("Trackers:"));
         if(ImGui.Button(Loc.T("Crystalline Conflict"))) {
             _plugin.WindowManager.OpenCCWindow();
