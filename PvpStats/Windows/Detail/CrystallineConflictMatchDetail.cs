@@ -702,7 +702,7 @@ internal class CrystallineConflictMatchDetail : MatchDetail<CrystallineConflictM
         var widthStyle = Plugin.Configuration.StretchScoreboardColumns ?? false ? ImGuiTableColumnFlags.WidthStretch : ImGuiTableColumnFlags.WidthFixed;
         ImGui.TableSetupColumn(Loc.T("Name"), ImGuiTableColumnFlags.WidthStretch, ImGuiHelpers.GlobalScale * 100f, 0);
         ImGui.TableSetupColumn(Loc.T("Home World"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 110f, 1);
-        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 50f, 2);
+        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 75f, 2);
         ImGui.TableSetupColumn(Loc.T("Kills"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Kills").GetHashCode());
         ImGui.TableSetupColumn(Loc.T("Deaths"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Deaths").GetHashCode());
         ImGui.TableSetupColumn(Loc.T("Assists"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Assists").GetHashCode());
@@ -839,7 +839,7 @@ internal class CrystallineConflictMatchDetail : MatchDetail<CrystallineConflictM
                 ImGui.TextColored(textColor, $"{row.Key.HomeWorld}");
             }
             if(ImGui.TableNextColumn()) {
-                var jobString = $"{player?.Job}";
+                var jobString = PlayerJobHelper.GetNameFromJob(player?.Job);
                 ImGuiHelper.CenterAlignCursor(jobString);
                 ImGui.TextColored(textColor, jobString);
             }
@@ -2140,8 +2140,8 @@ internal class CrystallineConflictMatchDetail : MatchDetail<CrystallineConflictM
             var players = Match.Players;
             foreach(var row in _scoreboard) {
                 var player = players.Where(x => x.Alias.Equals(row.Key)).FirstOrDefault();
-                csv += row.Key.Name + "," + row.Key.HomeWorld + "," + player?.Job + ",";
-                csv += player?.Team + "," + row.Value.Kills + "," + row.Value.Deaths + "," + row.Value.Assists + "," + row.Value.DamageDealt + "," + row.Value.DamageTaken + "," + row.Value.HPRestored + "," + row.Value.TimeOnCrystal + ",";
+                csv += row.Key.Name + "," + row.Key.HomeWorld + "," + PlayerJobHelper.GetNameFromJob(player?.Job) + ",";
+                csv += MatchHelper.GetTeamName(player?.Team ?? CrystallineConflictTeamName.Unknown) + "," + row.Value.Kills + "," + row.Value.Deaths + "," + row.Value.Assists + "," + row.Value.DamageDealt + "," + row.Value.DamageTaken + "," + row.Value.HPRestored + "," + row.Value.TimeOnCrystal + ",";
                 csv += "\n";
             }
         }

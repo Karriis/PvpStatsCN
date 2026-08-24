@@ -19,8 +19,8 @@ internal class FrontlineMatchList : MatchList<FrontlineMatch> {
     protected override List<ColumnParams> Columns { get; set; } = new() {
         new ColumnParams{Name = Loc.T("Start Time"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
         new ColumnParams{Name = Loc.T("Arena"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 140f },
-        new ColumnParams{Name = Loc.T("Job"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
-        new ColumnParams{Name = Loc.T("Team"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 65f },
+        new ColumnParams{Name = Loc.T("Job"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 75f, Priority = 1 },
+        new ColumnParams{Name = Loc.T("Team"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 75f },
         new ColumnParams{Name = Loc.T("Duration"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
         new ColumnParams{Name = Loc.T("Result"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
         new ColumnParams{Name = Loc.T("Tags"), Flags = ImGuiTableColumnFlags.WidthStretch, Width = 80f, Priority = 3 },
@@ -41,12 +41,13 @@ internal class FrontlineMatchList : MatchList<FrontlineMatch> {
 
         ImGui.TableNextColumn();
         var localPlayerJob = item.LocalPlayerTeamMember?.Job;
-        ImGuiHelper.CenterAlignCursor(localPlayerJob?.ToString() ?? "");
-        ImGui.TextColored(_plugin.Configuration.GetJobColor(localPlayerJob), localPlayerJob?.ToString());
+        var jobName = PlayerJobHelper.GetNameFromJob(localPlayerJob);
+        ImGuiHelper.CenterAlignCursor(jobName);
+        ImGui.TextColored(_plugin.Configuration.GetJobColor(localPlayerJob), jobName);
 
         ImGui.TableNextColumn();
         var teamColor = _plugin.Configuration.GetFrontlineTeamColor(item.LocalPlayerTeam);
-        ImGui.TextColored(teamColor, item.LocalPlayerTeam.ToString());
+        ImGui.TextColored(teamColor, MatchHelper.GetTeamName(item.LocalPlayerTeam));
 
         ImGui.TableNextColumn();
         var timeSpanString = ImGuiHelper.GetTimeSpanString(item.MatchDuration ?? TimeSpan.Zero);
@@ -58,7 +59,7 @@ internal class FrontlineMatchList : MatchList<FrontlineMatch> {
             2 => _plugin.Configuration.Colors.Loss,
             _ => _plugin.Configuration.Colors.Other,
         };
-        string resultText = item.Result != null ? ImGuiHelper.AddOrdinal((int)item.Result + 1).ToUpper() : "???";
+        string resultText = MatchHelper.GetPlacementName(item.Result);
         ImGuiHelper.CenterAlignCursor(resultText);
         ImGui.TextColored(color, resultText);
 
@@ -70,8 +71,8 @@ internal class FrontlineMatchList : MatchList<FrontlineMatch> {
         string csv = "";
         csv += match.DutyStartTime + ",";
         csv += (match.Arena != null ? MatchHelper.GetFrontlineArenaName((FrontlineMap)match.Arena) : "") + ",";
-        csv += match.LocalPlayerTeamMember?.Job + ",";
-        csv += match.LocalPlayerTeam + ",";
+        csv += PlayerJobHelper.GetNameFromJob(match.LocalPlayerTeamMember?.Job) + ",";
+        csv += MatchHelper.GetTeamName(match.LocalPlayerTeam) + ",";
         csv += match.MatchDuration + ",";
         csv += match.Result + ",";
         csv += "\n";

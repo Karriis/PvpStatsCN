@@ -27,7 +27,7 @@ internal class CrystallineConflictJobList : JobStatsList<CCPlayerJobStats, Cryst
 
     protected override List<ColumnParams> Columns { get; set; } = new() {
         new ColumnParams{           Name = Loc.T("Job"),                                                                       Id = 0,                                                             Width = 85f,                                    Flags = ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoReorder | ImGuiTableColumnFlags.NoHide },
-        new ColumnParams{           Name = Loc.T("Role"),                                                                      Id = 1,                                                             Width = 50f,                                    Flags = ImGuiTableColumnFlags.WidthFixed },
+        new ColumnParams{           Name = Loc.T("Role"),                                                                      Id = 1,                                                             Width = 90f,                                    Flags = ImGuiTableColumnFlags.WidthFixed },
         new NumericColumnParams{    Name = Loc.T("Total Instances"),                                                           Id = (uint)"StatsAll.Matches".GetHashCode(),                        Width = 65f + Offset,                           Flags = ImGuiTableColumnFlags.WidthFixed },
         new NumericColumnParams{    Name = "Job Wins",                                                                  Id = (uint)"StatsAll.Wins".GetHashCode(),                           Width = 45f + Offset,                           Flags = ImGuiTableColumnFlags.WidthFixed },
         new NumericColumnParams{    Name = "Job Losses",                                                                Id = (uint)"StatsAll.Losses".GetHashCode(),                         Width = 50f + Offset,   Alignment = 2,          Flags = ImGuiTableColumnFlags.WidthFixed },
@@ -165,7 +165,7 @@ internal class CrystallineConflictJobList : JobStatsList<CCPlayerJobStats, Cryst
         ImGui.SameLine(2f * ImGuiHelpers.GlobalScale);
         ImGui.TextUnformatted($"{PlayerJobHelper.GetNameFromJob(item)}");
         if(ImGui.TableNextColumn()) {
-            ImGui.TextColored(_plugin.Configuration.GetJobColor(item), $"{PlayerJobHelper.GetSubRoleFromJob(item)}");
+            ImGui.TextColored(_plugin.Configuration.GetJobColor(item), PlayerJobHelper.GetSubRoleName(item));
         }
 
         //job

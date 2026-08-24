@@ -6,7 +6,7 @@
   "InternalName": "PvpStatsCN",
   "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
   "ApplicableVersion": "any",
-  "Changelog": "* 增加进入 PvP 对局后不要启用、禁用或重载插件的醒目提示。\n* 汉化职业名称、地图名称、阵营名称及纷争前线结算页剩余字段。",
+  "Changelog": "* 修复对局列表、计分板、玩家列表和纪录页仍显示职业缩写的问题。\n* 修复职业统计页仍显示英文职能枚举的问题。\n* 汉化列表中的阵营与名次，并调整中文列宽。",
   "Tags": [
     "pvp",
     "statistics",

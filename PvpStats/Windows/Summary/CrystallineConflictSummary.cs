@@ -324,7 +324,7 @@ internal class CrystallineConflictSummary : Refreshable<CrystallineConflictMatch
                     ImGui.Text($"{PlayerJobHelper.GetNameFromJob(job.Key)}");
                 }
                 if(ImGui.TableNextColumn()) {
-                    ImGui.TextColored(Plugin.Configuration.GetJobColor(job.Key), $"{PlayerJobHelper.GetSubRoleFromJob(job.Key)}");
+                    ImGui.TextColored(Plugin.Configuration.GetJobColor(job.Key), PlayerJobHelper.GetSubRoleName(job.Key));
                 }
                 if(ImGui.TableNextColumn()) {
                     ImGuiHelper.DrawNumericCell(job.Value.Matches.ToString(), offset);
@@ -374,9 +374,9 @@ internal class CrystallineConflictSummary : Refreshable<CrystallineConflictMatch
                 ImGuiHelper.WrappedTooltip(player.Key.HomeWorld);
 
                 ImGui.TableNextColumn();
-                var jobString = player.Value.Job.ToString() ?? "";
+                var jobString = PlayerJobHelper.GetNameFromJob(player.Value.Job);
                 ImGuiHelper.CenterAlignCursor(jobString);
-                ImGui.TextColored(Plugin.Configuration.GetJobColor(player.Value.Job), player.Value.Job.ToString());
+                ImGui.TextColored(Plugin.Configuration.GetJobColor(player.Value.Job), jobString);
 
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell(player.Value.Matches.ToString(), offset);

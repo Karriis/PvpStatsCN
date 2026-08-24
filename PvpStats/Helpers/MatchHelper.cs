@@ -272,6 +272,15 @@ public static class MatchHelper {
         });
     }
 
+    public static string GetPlacementName(int? zeroBasedPlacement) {
+        return zeroBasedPlacement switch {
+            0 => Loc.T("1ST"),
+            1 => Loc.T("2ND"),
+            2 => Loc.T("3RD"),
+            _ => "???",
+        };
+    }
+
     public static string GetSuppliesName(RivalWingsSupplies? supplies) {
         return Loc.T(supplies switch {
             RivalWingsSupplies.Gobtank => "Gobtank",

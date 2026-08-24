@@ -63,12 +63,26 @@ internal static class PlayerJobHelper {
         return null;
     }
 
-    internal static string GetNameFromJob(Job job) {
-        if(AbbreviationNameMap.ContainsKey(job)) {
-            return Loc.T(AbbreviationNameMap[job]);
-        } else {
-            return "";
-        }
+    internal static string GetNameFromJob(Job? job) {
+        return job is not null && AbbreviationNameMap.TryGetValue(job.Value, out var name)
+            ? Loc.T(name)
+            : "";
+    }
+
+    internal static string GetRoleName(JobRole? role) {
+        return role is not null && JobRoleName.TryGetValue(role.Value, out var name)
+            ? Loc.T(name)
+            : "";
+    }
+
+    internal static string GetSubRoleName(JobSubRole? role) {
+        return role is not null && JobSubRoleName.TryGetValue(role.Value, out var name)
+            ? Loc.T(name)
+            : "";
+    }
+
+    internal static string GetSubRoleName(Job? job) {
+        return GetSubRoleName(GetSubRoleFromJob(job));
     }
 
     internal static JobRole? GetRoleFromJob(Job job) {

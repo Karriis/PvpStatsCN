@@ -301,7 +301,7 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
                 ImGui.Text($"{PlayerJobHelper.GetNameFromJob(job.Key)}");
 
                 ImGui.TableNextColumn();
-                var roleString = PlayerJobHelper.GetSubRoleFromJob(job.Key).ToString() ?? "";
+                var roleString = PlayerJobHelper.GetSubRoleName(job.Key);
                 //ImGuiHelper.CenterAlignCursor(roleString);
                 ImGui.TextColored(Plugin.Configuration.GetJobColor(job.Key), roleString);
 

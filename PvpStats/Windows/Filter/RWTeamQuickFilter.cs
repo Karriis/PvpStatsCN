@@ -86,6 +86,6 @@ internal class RWTeamQuickFilter : DataFilter {
                 break;
         };
         ImGui.Image(_plugin.WindowManager.GetTextureHandle(TextureHelper.RWTeamIconTexture), new Vector2(size * ImGuiHelpers.GlobalScale, size * ImGuiHelpers.GlobalScale), uv0, uv1);
-        ImGuiHelper.WrappedTooltip(team.ToString());
+        ImGuiHelper.WrappedTooltip(MatchHelper.GetTeamName(team));
     }
 }

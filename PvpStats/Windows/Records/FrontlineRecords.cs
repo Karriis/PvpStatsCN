@@ -242,7 +242,7 @@ internal class FrontlineRecords : MatchRecords<FrontlineMatch> {
                 var widthStyle = Plugin.Configuration.StretchScoreboardColumns ?? false ? ImGuiTableColumnFlags.WidthStretch : ImGuiTableColumnFlags.WidthFixed;
                 ImGui.TableSetupColumn(Loc.T("Time"), widthStyle, ImGuiHelpers.GlobalScale * 110f);
                 ImGui.TableSetupColumn(Loc.T("Arena"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 155f);
-                ImGui.TableSetupColumn(Loc.T("Job"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
+                ImGui.TableSetupColumn(Loc.T("Job"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 75f);
                 ImGui.TableSetupColumn(Loc.T("Result"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
 
                 ImGui.TableNextColumn();
@@ -253,15 +253,16 @@ internal class FrontlineRecords : MatchRecords<FrontlineMatch> {
                 }
                 ImGui.TableNextColumn();
                 var localPlayerJob = match.LocalPlayerTeamMember!.Job;
-                ImGuiHelper.CenterAlignCursor(localPlayerJob.ToString() ?? "");
-                ImGui.TextColored(Plugin.Configuration.GetJobColor(localPlayerJob), localPlayerJob.ToString());
+                var jobName = PlayerJobHelper.GetNameFromJob(localPlayerJob);
+                ImGuiHelper.CenterAlignCursor(jobName);
+                ImGui.TextColored(Plugin.Configuration.GetJobColor(localPlayerJob), jobName);
                 ImGui.TableNextColumn();
                 var color = match.Result switch {
                     0 => Plugin.Configuration.Colors.Win,
                     2 => Plugin.Configuration.Colors.Loss,
                     _ => Plugin.Configuration.Colors.Other,
                 };
-                string resultText = match.Result != null ? ImGuiHelper.AddOrdinal((int)match.Result + 1).ToUpper() : "???";
+                string resultText = MatchHelper.GetPlacementName(match.Result);
                 ImGuiHelper.CenterAlignCursor(resultText);
                 ImGui.TextColored(color, resultText);
             }

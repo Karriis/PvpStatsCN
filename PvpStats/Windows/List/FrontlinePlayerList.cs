@@ -32,7 +32,7 @@ internal class FrontlinePlayerList : PlayerStatsList<FLPlayerJobStats, Frontline
     protected override List<ColumnParams> Columns { get; set; } = new() {
         new ColumnParams{           Name = Loc.T("Name"),                                                                      Id = 0,                                                             Width = 200f,                                   Flags = ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoReorder | ImGuiTableColumnFlags.NoHide },
         new ColumnParams{           Name = Loc.T("Home World"),                        Header = Loc.T("Home World"),                  Id = 1,                                                             Width = 110f,                                   Flags = ImGuiTableColumnFlags.WidthFixed },
-        new ColumnParams{           Name = Loc.T("Favored Job"),                                                               Id = (uint)"StatsAll.Job".GetHashCode(),                            Width = 50f,            Alignment = 1,          Flags = ImGuiTableColumnFlags.WidthFixed },
+        new ColumnParams{           Name = Loc.T("Favored Job"),                                                               Id = (uint)"StatsAll.Job".GetHashCode(),                            Width = 75f,            Alignment = 1,          Flags = ImGuiTableColumnFlags.WidthFixed },
         new NumericColumnParams{    Name = Loc.T("Total Matches"),                                                             Id = (uint)"StatsAll.Matches".GetHashCode(),                        Width = 65f + Offset,                           Flags = ImGuiTableColumnFlags.WidthFixed },
         new NumericColumnParams{    Name = Loc.T("1st Places"),                                                                Id = (uint)"StatsAll.FirstPlaces".GetHashCode(),                    Width = 45f + Offset,                           Flags = ImGuiTableColumnFlags.WidthFixed },
         new NumericColumnParams{    Name = Loc.T("2nd Places"),                                                                Id = (uint)"StatsAll.SecondPlaces".GetHashCode(),                   Width = 45f + Offset,                           Flags = ImGuiTableColumnFlags.WidthFixed },
@@ -220,7 +220,7 @@ internal class FrontlinePlayerList : PlayerStatsList<FLPlayerJobStats, Frontline
         }
         if(ImGui.TableNextColumn()) {
             var job = StatsModel[item].StatsAll.Job;
-            var jobString = job.ToString() ?? "";
+            var jobString = PlayerJobHelper.GetNameFromJob(job);
             ImGuiHelper.CenterAlignCursor(jobString);
             ImGui.TextColored(_plugin.Configuration.GetJobColor(job), jobString);
         }

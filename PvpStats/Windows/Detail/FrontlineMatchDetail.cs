@@ -144,7 +144,6 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
                 //    case 2:
                 //        color = Plugin.Configuration.Colors.Loss; break;
                 //}
-                //string resultText = Match.Result != null ? ImGuiHelper.AddOrdinal((int)Match.Result).ToUpper() : "???";
                 //ImGuiHelpers.CenterCursorForText(resultText);
                 //ImGui.TextColored(color, resultText);
                 DrawPlacement(Match.Result, true);
@@ -256,12 +255,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
             2 => Plugin.Configuration.Colors.Loss,
             _ => Plugin.Configuration.Colors.Other,
         };
-        string resultText = placement switch {
-            0 => Loc.T("1ST"),
-            1 => Loc.T("2ND"),
-            2 => Loc.T("3RD"),
-            _ => "???",
-        };
+        string resultText = MatchHelper.GetPlacementName(placement);
         if(windowCenter) {
             ImGuiHelpers.CenterCursorForText(resultText);
         } else {
@@ -312,7 +306,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         }
         ImGui.TableSetupColumn(Loc.T("Name"), widthStyle, ImGuiHelpers.GlobalScale * 200f, 0);
         ImGui.TableSetupColumn(Loc.T("Home World"), widthStyle, ImGuiHelpers.GlobalScale * 110f, 1);
-        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 50f, 2);
+        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 75f, 2);
         ImGui.TableSetupColumn(Loc.T("Kills"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Kills").GetHashCode());
         ImGui.TableSetupColumn(Loc.T("Deaths"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Deaths").GetHashCode());
         ImGui.TableSetupColumn(Loc.T("Assists"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Assists").GetHashCode());
@@ -537,7 +531,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
                     ImGui.TextColored(textColor, $"{player.Name.HomeWorld}");
                 }
                 if(ImGui.TableNextColumn()) {
-                    var jobString = $"{player.Job}";
+                    var jobString = PlayerJobHelper.GetNameFromJob(player.Job);
                     ImGuiHelper.CenterAlignCursor(jobString);
                     ImGui.TextColored(textColor, jobString);
                 }
@@ -909,7 +903,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         csv += "Name,Home World,Job,Kills,Deaths,Assists,Damage Dealt,Damage to PCs,Damage To Other,Damage Taken, HP Restored,Special,Occupations\n";
         foreach(var player in Match.Players) {
             var scoreboard = Match.PlayerScoreboards[player.Name];
-            csv += player.Name.Name + "," + player.Name.HomeWorld + "," + player.Job + "," + scoreboard.Kills + "," + scoreboard.Deaths + "," + scoreboard.Assists + ","
+            csv += player.Name.Name + "," + player.Name.HomeWorld + "," + PlayerJobHelper.GetNameFromJob(player.Job) + "," + scoreboard.Kills + "," + scoreboard.Deaths + "," + scoreboard.Assists + ","
                 + scoreboard.DamageDealt + "," + scoreboard.DamageToPCs + "," + scoreboard.DamageToOther + "," + scoreboard.DamageTaken + "," + scoreboard.HPRestored + ","
                 + scoreboard.Special1 + "," + scoreboard.Occupations + ","
                 + "\n";

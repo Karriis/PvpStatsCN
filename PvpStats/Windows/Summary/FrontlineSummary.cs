@@ -279,7 +279,7 @@ internal class FrontlineSummary : RefreshableSync<FrontlineMatch> {
                 ImGui.Text($"{PlayerJobHelper.GetNameFromJob(job.Key)}");
 
                 ImGui.TableNextColumn();
-                ImGui.TextColored(Plugin.Configuration.GetJobColor(job.Key), $"{PlayerJobHelper.GetSubRoleFromJob(job.Key)}");
+                ImGui.TextColored(Plugin.Configuration.GetJobColor(job.Key), PlayerJobHelper.GetSubRoleName(job.Key));
 
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell(job.Value.Matches.ToString(), offset);

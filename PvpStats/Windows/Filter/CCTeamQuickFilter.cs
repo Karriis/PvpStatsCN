@@ -66,7 +66,7 @@ internal class CCTeamQuickFilter : DataFilter {
                 }
                 ImGui.SameLine();
                 DrawCCTeamIcon(category.Key, 25f);
-                ImGuiHelper.WrappedTooltip(category.Key.ToString());
+                ImGuiHelper.WrappedTooltip(MatchHelper.GetTeamName(category.Key));
             }
         }
     }

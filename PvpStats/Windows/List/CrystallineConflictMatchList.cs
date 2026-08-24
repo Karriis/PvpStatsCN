@@ -15,7 +15,7 @@ internal class CrystallineConflictMatchList : MatchList<CrystallineConflictMatch
     protected override List<ColumnParams> Columns { get; set; } = new() {
         new ColumnParams{Name = Loc.T("Start Time"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
         new ColumnParams{Name = Loc.T("Arena"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 145f },
-        new ColumnParams{Name = Loc.T("Job"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
+        new ColumnParams{Name = Loc.T("Job"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 75f, Priority = 1 },
         new ColumnParams{Name = Loc.T("Queue"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 50f },
         new ColumnParams{Name = Loc.T("Duration"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
         new ColumnParams{Name = Loc.T("Result"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
@@ -39,8 +39,9 @@ internal class CrystallineConflictMatchList : MatchList<CrystallineConflictMatch
         ImGui.TableNextColumn();
         if(!item.IsSpectated) {
             var localPlayerJob = item.LocalPlayerTeamMember!.Job;
-            ImGuiHelper.CenterAlignCursor(localPlayerJob.ToString() ?? "");
-            ImGui.TextColored(_plugin.Configuration.GetJobColor(localPlayerJob), localPlayerJob.ToString());
+            var jobName = PlayerJobHelper.GetNameFromJob(localPlayerJob);
+            ImGuiHelper.CenterAlignCursor(jobName);
+            ImGui.TextColored(_plugin.Configuration.GetJobColor(localPlayerJob), jobName);
         }
         ImGui.TableNextColumn();
         ImGui.Text(Loc.T(item.MatchType.ToString()));
@@ -79,7 +80,7 @@ internal class CrystallineConflictMatchList : MatchList<CrystallineConflictMatch
         string csv = "";
         csv += match.DutyStartTime + ",";
         csv += (match.Arena != null ? MatchHelper.GetArenaName((CrystallineConflictMap)match.Arena) : "") + ",";
-        csv += (!match.IsSpectated ? match.LocalPlayerTeamMember!.Job : "") + ",";
+        csv += (!match.IsSpectated ? PlayerJobHelper.GetNameFromJob(match.LocalPlayerTeamMember!.Job) : "") + ",";
         csv += match.MatchType + ",";
         csv += match.MatchDuration + ",";
         csv += (match.IsWin ? Loc.T("WIN") : match.MatchWinner != null ? Loc.T("LOSS") : "???") + ",";

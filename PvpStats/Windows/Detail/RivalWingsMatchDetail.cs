@@ -382,10 +382,11 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
     }
 
     private void DrawTeamHeader(RivalWingsTeamName team) {
-        ImGuiHelper.CenterAlignCursor(team.ToString());
+        var teamName = MatchHelper.GetTeamName(team);
+        ImGuiHelper.CenterAlignCursor(teamName);
         bool isPlayerTeam = Match.LocalPlayerTeam == team;
         var color = isPlayerTeam ? Plugin.Configuration.Colors.CCLocalPlayer : ImGuiColors.DalamudWhite;
-        ImGui.TextColored(color, team.ToString());
+        ImGui.TextColored(color, teamName);
     }
 
     private void DrawCoreTable(RivalWingsTeamName team) {
@@ -579,7 +580,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         ImGui.TableSetupColumn(Loc.T("Alliance"), widthStyle | ImGuiTableColumnFlags.NoHeaderLabel, ImGuiHelpers.GlobalScale * 10f, 3);
         ImGui.TableSetupColumn(Loc.T("Name"), widthStyle, ImGuiHelpers.GlobalScale * 200f, 0);
         ImGui.TableSetupColumn(Loc.T("Home World"), widthStyle, ImGuiHelpers.GlobalScale * 110f, 1);
-        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 50f, 2);
+        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 75f, 2);
         ImGui.TableSetupColumn(Loc.T("Kills"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Kills").GetHashCode());
         ImGui.TableSetupColumn(Loc.T("Deaths"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Deaths").GetHashCode());
         ImGui.TableSetupColumn(Loc.T("Assists"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Assists").GetHashCode());
@@ -744,7 +745,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                 ImGui.TextColored(textColor, $"{player.Name.HomeWorld}");
             }
             if(ImGui.TableNextColumn()) {
-                var jobString = $"{player.Job}";
+                var jobString = PlayerJobHelper.GetNameFromJob(player.Job);
                 ImGuiHelper.CenterAlignCursor(jobString);
                 ImGui.TextColored(textColor, jobString);
             }
@@ -1406,7 +1407,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
             csv += "Alliance,Name,Home World,Job,Kills,Deaths,Assists,Damage Dealt,Damage to PCs,Damage To Other,Damage Taken, HP Restored,Special,Ceruleum\n";
             foreach(var player in Match.Players) {
                 var scoreboard = Match.PlayerScoreboards[player.Name];
-                csv += player.Alliance + "," + player.Name.Name + "," + player.Name.HomeWorld + "," + player.Job + "," + scoreboard.Kills + "," + scoreboard.Deaths + "," + scoreboard.Assists + ","
+                csv += player.Alliance + "," + player.Name.Name + "," + player.Name.HomeWorld + "," + PlayerJobHelper.GetNameFromJob(player.Job) + "," + scoreboard.Kills + "," + scoreboard.Deaths + "," + scoreboard.Assists + ","
                     + scoreboard.DamageDealt + "," + scoreboard.DamageToPCs + "," + scoreboard.DamageToOther + "," + scoreboard.DamageTaken + "," + scoreboard.HPRestored + ","
                     + scoreboard.Special1 + "," + scoreboard.Ceruleum + ","
                     + "\n";

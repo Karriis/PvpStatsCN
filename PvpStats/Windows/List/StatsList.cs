@@ -127,7 +127,7 @@ internal abstract class StatsList<T, U, V> : FilteredList<T, V> where T : notnul
                 if(col.Id == 0) {
                     csv += PlayerJobHelper.GetNameFromJob((Job)Convert.ChangeType(key, typeof(Job)));
                 } else if(col.Id == 1) {
-                    csv += PlayerJobHelper.GetSubRoleFromJob((Job)Convert.ChangeType(key, typeof(Job)));
+                    csv += PlayerJobHelper.GetSubRoleName((Job)Convert.ChangeType(key, typeof(Job)));
                 }
             }
 

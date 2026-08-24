@@ -143,7 +143,7 @@ internal class RivalWingsRecords : MatchRecords<RivalWingsMatch> {
                 var widthStyle = Plugin.Configuration.StretchScoreboardColumns ?? false ? ImGuiTableColumnFlags.WidthStretch : ImGuiTableColumnFlags.WidthFixed;
                 ImGui.TableSetupColumn(Loc.T("Time"), widthStyle, ImGuiHelpers.GlobalScale * 110f);
                 ImGui.TableSetupColumn(Loc.T("Arena"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 155f);
-                ImGui.TableSetupColumn(Loc.T("Job"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
+                ImGui.TableSetupColumn(Loc.T("Job"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 75f);
                 ImGui.TableSetupColumn(Loc.T("Result"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
 
                 ImGui.TableNextColumn();
@@ -154,8 +154,9 @@ internal class RivalWingsRecords : MatchRecords<RivalWingsMatch> {
                 }
                 ImGui.TableNextColumn();
                 var localPlayerJob = match.LocalPlayerTeamMember!.Job;
-                ImGuiHelper.CenterAlignCursor(localPlayerJob.ToString() ?? "");
-                ImGui.TextColored(Plugin.Configuration.GetJobColor(localPlayerJob), localPlayerJob.ToString());
+                var jobName = PlayerJobHelper.GetNameFromJob(localPlayerJob);
+                ImGuiHelper.CenterAlignCursor(jobName);
+                ImGui.TextColored(Plugin.Configuration.GetJobColor(localPlayerJob), jobName);
                 ImGui.TableNextColumn();
                 var color = match.IsWin ? Plugin.Configuration.Colors.Win : match.IsLoss ? Plugin.Configuration.Colors.Loss : Plugin.Configuration.Colors.Other;
                 var result = match.IsWin ? Loc.T("WIN") : match.IsLoss ? Loc.T("LOSS") : "???";

@@ -59,7 +59,7 @@ public class FLResultFilter : DataFilter {
             foreach(var category in FilterState) {
                 ImGui.TableNextColumn();
                 bool filterState = category.Value;
-                if(ImGui.Checkbox($"{ImGuiHelper.AddOrdinal(category.Key + 1).ToUpper()}##{GetHashCode()}", ref filterState)) {
+                if(ImGui.Checkbox($"{MatchHelper.GetPlacementName(category.Key)}##{GetHashCode()}", ref filterState)) {
                     Task.Run(async () => {
                         FilterState[category.Key] = filterState;
                         UpdateAllSelected();
