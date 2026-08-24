@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using PvpStats.Types.Match;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PvpStats.Windows.Filter;
 
 public class TierFilter : DataFilter {
-    public override string Name => "Ranked Tier";
+    public override string Name => Loc.T("Ranked Tier");
     public override string HelpMessage => "Ranked match tier is determined by the highest ranked player in each match.";
     public ArenaTier TierLow { get; set; } = ArenaTier.None;
     public ArenaTier TierHigh { get; set; } = ArenaTier.Ultima;
@@ -40,7 +40,7 @@ public class TierFilter : DataFilter {
             });
         }
         ImGui.SameLine();
-        ImGui.Text("to");
+        ImGui.Text(Loc.T("to"));
         ImGui.SameLine();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         if(ImGui.Combo($"##tierComboHigh", ref indexHigh, _tierCombo.ToArray(), _tierCombo.Count)) {

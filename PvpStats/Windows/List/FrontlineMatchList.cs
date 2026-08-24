@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using PvpStats.Helpers;
 using PvpStats.Types.Match;
@@ -17,13 +17,13 @@ internal class FrontlineMatchList : MatchList<FrontlineMatch> {
     //protected override bool DynamicColumns { get; set; } = false;
 
     protected override List<ColumnParams> Columns { get; set; } = new() {
-        new ColumnParams{Name = "Start Time", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
-        new ColumnParams{Name = "Arena", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 140f },
-        new ColumnParams{Name = "Job", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
-        new ColumnParams{Name = "Team", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 65f },
-        new ColumnParams{Name = "Duration", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
-        new ColumnParams{Name = "Result", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
-        new ColumnParams{Name = "Tags", Flags = ImGuiTableColumnFlags.WidthStretch, Width = 80f, Priority = 3 },
+        new ColumnParams{Name = Loc.T("Start Time"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
+        new ColumnParams{Name = Loc.T("Arena"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 140f },
+        new ColumnParams{Name = Loc.T("Job"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
+        new ColumnParams{Name = Loc.T("Team"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 65f },
+        new ColumnParams{Name = Loc.T("Duration"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
+        new ColumnParams{Name = Loc.T("Result"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
+        new ColumnParams{Name = Loc.T("Tags"), Flags = ImGuiTableColumnFlags.WidthStretch, Width = 80f, Priority = 3 },
     };
 
     public FrontlineMatchList(Plugin plugin, SemaphoreSlim? interlock = null) : base(plugin, plugin.FLCache, interlock) {

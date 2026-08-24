@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Helpers;
@@ -18,16 +18,16 @@ public enum StatSource {
 
 public class StatSourceFilter : DataFilter, IEquatable<StatSourceFilter> {
 
-    public override string Name => "Stat Source";
+    public override string Name => Loc.T("Stat Source");
     internal bool AllSelected { get; set; }
     internal bool InheritFromPlayerFilter { get; set; }
     public Dictionary<StatSource, bool> FilterState { get; set; } = new();
 
     public static Dictionary<StatSource, string> FilterNames => new() {
-        { StatSource.LocalPlayer, "Local Player" },
-        { StatSource.Teammate, "Teammates" },
-        { StatSource.Opponent, "Opponents" },
-        { StatSource.Spectated, "Spectated Matches" }
+        { StatSource.LocalPlayer, Loc.T("Local Player") },
+        { StatSource.Teammate, Loc.T("Teammates") },
+        { StatSource.Opponent, Loc.T("Opponents") },
+        { StatSource.Spectated, Loc.T("Spectated Matches") }
     };
 
     public StatSourceFilter() {
@@ -77,7 +77,7 @@ public class StatSourceFilter : DataFilter, IEquatable<StatSourceFilter> {
 
             ImGui.TableNextColumn();
             bool allSelected = AllSelected;
-            if(ImGui.Checkbox($"Select All##{GetHashCode()}", ref allSelected)) {
+            if(ImGui.Checkbox($"{Loc.T("Select All")}##{GetHashCode()}", ref allSelected)) {
                 Task.Run(async () => {
                     foreach(var category in FilterState) {
                         FilterState[category.Key] = allSelected;
@@ -88,19 +88,19 @@ public class StatSourceFilter : DataFilter, IEquatable<StatSourceFilter> {
             }
             ImGui.TableNextColumn();
             bool inheritFromPlayerFilter = InheritFromPlayerFilter;
-            if(ImGui.Checkbox($"Inherit from player filter##{GetHashCode()}", ref inheritFromPlayerFilter)) {
+            if(ImGui.Checkbox($"{Loc.T("Inherit from player filter")}##{GetHashCode()}", ref inheritFromPlayerFilter)) {
                 Task.Run(async () => {
                     InheritFromPlayerFilter = inheritFromPlayerFilter;
                     await Refresh();
                 });
             }
-            ImGuiHelper.HelpMarker("Will only include stats for players who match all conditions of the player filter.");
+            ImGuiHelper.HelpMarker(Loc.T("Will only include stats for players who match all conditions of the player filter."));
             ImGui.TableNextRow();
 
             foreach(var category in FilterState) {
                 ImGui.TableNextColumn();
                 bool filterState = category.Value;
-                if(ImGui.Checkbox($"{FilterNames[category.Key]}##{GetHashCode()}", ref filterState)) {
+                if(ImGui.Checkbox($"{Loc.T(FilterNames[category.Key])}##{GetHashCode()}", ref filterState)) {
                     Task.Run(async () => {
                         FilterState[category.Key] = filterState;
                         UpdateAllSelected();

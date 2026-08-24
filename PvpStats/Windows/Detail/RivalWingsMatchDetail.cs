@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Bindings.ImPlot;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -220,7 +220,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                 bool isWin = Match.IsWin;
                 bool isLoss = Match.IsLoss;
                 var color = isWin ? Plugin.Configuration.Colors.Win : isLoss ? Plugin.Configuration.Colors.Loss : Plugin.Configuration.Colors.Other;
-                string resultText = isWin ? "WIN" : isLoss ? "LOSS" : "???";
+                string resultText = isWin ? Loc.T("WIN") : isLoss ? Loc.T("LOSS") : "???";
                 ImGuiHelper.CenterAlignCursor(resultText);
                 ImGui.TextColored(color, resultText);
                 ImGui.TableNextColumn();
@@ -249,7 +249,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                     ImGuiHelper.CenterAlignCursor("(?)");
                     ////ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X / 2 - 2f * ImGuiHelpers.GlobalScale);
                     //ImGui.Text("");
-                    ImGuiHelper.HelpMarker("Information missing due to match not fully recorded.", false);
+                    ImGuiHelper.HelpMarker(Loc.T("Information missing due to match not fully recorded."), false);
                 }
 
                 ImGui.TableNextColumn();
@@ -273,30 +273,30 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         using(var tabBar = ImRaii.TabBar("TabBar")) {
 
             if(Match.AllianceStats != null) {
-                using var tab = ImRaii.TabItem("Alliances");
+                using var tab = ImRaii.TabItem(Loc.T("Alliances"));
                 if(tab) {
-                    if(CurrentTab != "Alliances") {
+                    if(CurrentTab != Loc.T("Alliances")) {
                         SetWindowSize(SizeConstraints!.Value.MinimumSize);
-                        CurrentTab = "Alliances";
+                        CurrentTab = Loc.T("Alliances");
                     }
                     DrawAlliances();
                 }
             }
             if(Match.PlayerScoreboards != null) {
-                using var tab = ImRaii.TabItem("Scoreboard");
+                using var tab = ImRaii.TabItem(Loc.T("Scoreboard"));
                 if(tab) {
-                    if(CurrentTab != "Scoreboard") {
+                    if(CurrentTab != Loc.T("Scoreboard")) {
                         SetWindowSize(new Vector2(995, 800));
-                        CurrentTab = "Scoreboard";
+                        CurrentTab = Loc.T("Scoreboard");
                     }
-                    ImGuiHelper.HelpMarker("Right-click table header to show and hide columns including extra metrics.", false, true);
+                    ImGuiHelper.HelpMarker(Loc.T("Right-click table header to show and hide columns including extra metrics."), false, true);
                     if(_playerContributions != null) {
                         using(var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing * 2.5f * ImGuiHelpers.GlobalScale)) {
                             ImGui.SameLine();
                         }
                         ImGuiComponents.ToggleButton("##showPercentages", ref ShowPercentages);
                         ImGui.SameLine();
-                        ImGui.Text("Show team contributions");
+                        ImGui.Text(Loc.T("Show team contributions"));
                     }
                     if(_teamScoreboard != null) {
                         using(var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing * 2.5f * ImGuiHelpers.GlobalScale)) {
@@ -304,7 +304,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                         }
                         ImGui.Checkbox("###showTeamRows", ref ShowTeamRows);
                         ImGui.SameLine();
-                        ImGui.Text("Show team totals");
+                        ImGui.Text(Loc.T("Show team totals"));
                     }
                     using(var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing * 2.5f * ImGuiHelpers.GlobalScale)) {
                         ImGui.SameLine();
@@ -314,21 +314,21 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                 }
             }
             if(_timeline != null) {
-                using(var tab = ImRaii.TabItem("Timeline")) {
+                using(var tab = ImRaii.TabItem(Loc.T("Timeline"))) {
                     if(tab) {
-                        if(CurrentTab != "Timeline") {
+                        if(CurrentTab != Loc.T("Timeline")) {
                             SetWindowSize(new Vector2(SizeConstraints!.Value.MinimumSize.X, 600));
-                            CurrentTab = "Timeline";
+                            CurrentTab = Loc.T("Timeline");
                         }
                         DrawTimeline();
                     }
                 }
 
-                using(var tab2 = ImRaii.TabItem("Graphs")) {
+                using(var tab2 = ImRaii.TabItem(Loc.T("Graphs"))) {
                     if(tab2) {
-                        if(CurrentTab != "Graphs") {
+                        if(CurrentTab != Loc.T("Graphs")) {
                             SetWindowSize(new Vector2(975, 825));
-                            CurrentTab = "Graphs";
+                            CurrentTab = Loc.T("Graphs");
                         }
                         DrawGraphs();
                     }
@@ -350,7 +350,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - 49f * ImGuiHelpers.GlobalScale);
                     if(Match.TeamMechTime != null) {
                         DrawMechTable(team, Match.TeamMechTime[team], reverse);
-                        ImGuiHelper.WrappedTooltip("Average mechs deployed");
+                        ImGuiHelper.WrappedTooltip(Loc.T("Average mechs deployed"));
                     } else {
                         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 80f * ImGuiHelpers.GlobalScale);
                     }
@@ -371,7 +371,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                     //ImGui.SetNextItemWidth(40f * ImGuiHelpers.GlobalScale);
                     if(Match.TeamMechTime != null) {
                         DrawMechTable(team, Match.TeamMechTime[team], reverse);
-                        ImGuiHelper.WrappedTooltip("Average mechs deployed");
+                        ImGuiHelper.WrappedTooltip(Loc.T("Average mechs deployed"));
                     } else {
                         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 80f * ImGuiHelpers.GlobalScale);
                     }
@@ -537,7 +537,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
                 drawText(mercCount1.ToString());
                 ImGui.TableNextColumn();
                 drawImage(Plugin.WindowManager.GetTextureHandle(TextureHelper.GoblinMercIcons[RivalWingsTeamName.Unknown]), 25f);
-                ImGuiHelper.WrappedTooltip("Goblin Mercenary");
+                ImGuiHelper.WrappedTooltip(Loc.T("Goblin Mercenary"));
                 ImGui.TableNextColumn();
                 var mercCount2 = Match.Mercs[secondTeam];
                 if(Match.Flags.HasFlag(RWValidationFlag.DoubleMerc)) {
@@ -576,86 +576,86 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         //new Vector2(ImGui.GetContentRegionAvail().X, 550f * ImGuiHelpers.GlobalScale)
         if(!table) return;
         var widthStyle = Plugin.Configuration.StretchScoreboardColumns ?? false ? ImGuiTableColumnFlags.WidthStretch : ImGuiTableColumnFlags.WidthFixed;
-        ImGui.TableSetupColumn("Alliance", widthStyle | ImGuiTableColumnFlags.NoHeaderLabel, ImGuiHelpers.GlobalScale * 10f, 3);
-        ImGui.TableSetupColumn("Name", widthStyle, ImGuiHelpers.GlobalScale * 200f, 0);
-        ImGui.TableSetupColumn("Home World", widthStyle, ImGuiHelpers.GlobalScale * 110f, 1);
-        ImGui.TableSetupColumn("Job", widthStyle, ImGuiHelpers.GlobalScale * 50f, 2);
-        ImGui.TableSetupColumn("Kills", widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)"Kills".GetHashCode());
-        ImGui.TableSetupColumn("Deaths", widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)"Deaths".GetHashCode());
-        ImGui.TableSetupColumn("Assists", widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)"Assists".GetHashCode());
-        ImGui.TableSetupColumn("Damage to PCs", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToPCs".GetHashCode());
-        ImGui.TableSetupColumn("Damage to Other", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToOther".GetHashCode());
-        ImGui.TableSetupColumn("Damage Dealt", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 65f, (uint)"DamageDealt".GetHashCode());
-        ImGui.TableSetupColumn("Damage Taken", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageTaken".GetHashCode());
-        ImGui.TableSetupColumn("HP Restored", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"HPRestored".GetHashCode());
-        ImGui.TableSetupColumn("Special", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 60f, (uint)"Special1".GetHashCode());
-        ImGui.TableSetupColumn("Ceruleum", widthStyle, ImGuiHelpers.GlobalScale * 55f, (uint)"Ceruleum".GetHashCode());
-        ImGui.TableSetupColumn("Damage Dealt per Kill/Assist", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerKA".GetHashCode());
-        ImGui.TableSetupColumn("Damage Dealt per Life", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerLife".GetHashCode());
-        ImGui.TableSetupColumn("Damage Taken per Life", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageTakenPerLife".GetHashCode());
-        ImGui.TableSetupColumn("HP Restored per Life", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"HPRestoredPerLife".GetHashCode());
-        ImGui.TableSetupColumn("KDA Ratio", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 50f, (uint)"KDA".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Alliance"), widthStyle | ImGuiTableColumnFlags.NoHeaderLabel, ImGuiHelpers.GlobalScale * 10f, 3);
+        ImGui.TableSetupColumn(Loc.T("Name"), widthStyle, ImGuiHelpers.GlobalScale * 200f, 0);
+        ImGui.TableSetupColumn(Loc.T("Home World"), widthStyle, ImGuiHelpers.GlobalScale * 110f, 1);
+        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 50f, 2);
+        ImGui.TableSetupColumn(Loc.T("Kills"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Kills").GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Deaths"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Deaths").GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Assists"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Assists").GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage to PCs"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToPCs".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage to Other"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToOther".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Dealt"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 65f, (uint)"DamageDealt".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Taken"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageTaken".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("HP Restored"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"HPRestored".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Special"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 60f, (uint)"Special1".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Ceruleum"), widthStyle, ImGuiHelpers.GlobalScale * 55f, (uint)Loc.T("Ceruleum").GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Dealt per Kill/Assist"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerKA".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Dealt per Life"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerLife".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Taken per Life"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageTakenPerLife".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("HP Restored per Life"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"HPRestoredPerLife".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("KDA Ratio"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 50f, (uint)"KDA".GetHashCode());
 
         ImGui.TableSetupScrollFreeze(2, 1);
 
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Alliance", 0, false);
+            ImGuiHelper.DrawTableHeader(Loc.T("Alliance"), 0, false);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Name", 0);
+            ImGuiHelper.DrawTableHeader(Loc.T("Name"), 0);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Home World", 0);
+            ImGuiHelper.DrawTableHeader(Loc.T("Home World"), 0);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Job", 1);
+            ImGuiHelper.DrawTableHeader(Loc.T("Job"), 1);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Kills");
+            ImGuiHelper.DrawTableHeader(Loc.T("Kills"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Deaths");
+            ImGuiHelper.DrawTableHeader(Loc.T("Deaths"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Assists");
+            ImGuiHelper.DrawTableHeader(Loc.T("Assists"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage\nto PCs");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto PCs"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage\nto Other");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto Other"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage\nDealt");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nDealt"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage\nTaken");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nTaken"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("HP\nRestored");
+            ImGuiHelper.DrawTableHeader(Loc.T("HP\nRestored"));
         }
         if(ImGui.TableNextColumn()) {
             ImGuiHelper.RightAlignCursor2("(?)", -20f * ImGuiHelpers.GlobalScale);
             ImGui.TableHeader("");
-            ImGuiHelper.HelpMarker("Not sure what this is. It's related to healing.", true);
+            ImGuiHelper.HelpMarker(Loc.T("Not sure what this is. It's related to healing."), true);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Ceru-\nleum");
+            ImGuiHelper.DrawTableHeader(Loc.T("Ceru-\nleum"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage Dealt\nper Kill/Assist");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage Dealt\nper Kill/Assist"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage Dealt\nper Life");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage Dealt\nper Life"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage Taken\nper Life");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage Taken\nper Life"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("HP Restored\nper Life");
+            ImGuiHelper.DrawTableHeader(Loc.T("HP Restored\nper Life"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("KDA\nRatio");
+            ImGuiHelper.DrawTableHeader(Loc.T("KDA\nRatio"));
         }
 
         //column sorting
@@ -959,7 +959,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
     private void DrawTimeline() {
         //filters...
         if(Match.DutyStartTime >= Match.MatchStartTime) {
-            ImGui.TextColored(ImGuiColors.DalamudRed, "Full timeline incomplete due to duty joined in progress.");
+            ImGui.TextColored(ImGuiColors.DalamudRed, Loc.T("Full timeline incomplete due to duty joined in progress."));
         }
         using var child = ImRaii.Child("timelineChild");
         using var table = ImRaii.Table("timelineTable", 2);
@@ -1052,12 +1052,12 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2(0f, ImGui.GetStyle().ItemSpacing.Y));
         if(matchEvent.Count == 20) {
             var color = Plugin.Configuration.GetRivalWingsTeamColor(Match.LocalPlayerTeam);
-            ImGui.TextColored(color, $"Alliance {GetAllianceLetter(matchEvent.Alliance ?? 777)}");
+            ImGui.TextColored(color, Loc.T("Alliance {0}", GetAllianceLetter(matchEvent.Alliance ?? 777)));
             ImGui.SameLine();
             ImGui.Text(" is ");
             ImGui.SameLine();
             //insert icon
-            ImGui.TextColored(ImGuiColors.DalamudOrange, "Flying High!");
+            ImGui.TextColored(ImGuiColors.DalamudOrange, Loc.T("Flying High!"));
         }
     }
 
@@ -1073,7 +1073,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
 
     private void DrawGraphs() {
         //filters
-        ImGui.Checkbox("Include event icons", ref _includeEventIcons);
+        ImGui.Checkbox(Loc.T("Include event icons"), ref _includeEventIcons);
 
         using var child = ImRaii.Child("graphChild", ImGui.GetContentRegionAvail(), true);
         if(child) {
@@ -1090,7 +1090,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
     }
 
     private void DrawStructureHealthGraph() {
-        using var plot = ImRaii.Plot("Structure Health", new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
+        using var plot = ImRaii.Plot(Loc.T("Structure Health"), new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
 
         if(!plot) {
             return;
@@ -1101,38 +1101,38 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         ImPlot.SetupAxisLimitsConstraints(ImAxis.X1, 0, 900);
         ImPlot.SetupAxisLimitsConstraints(ImAxis.Y1, 0, 110);
 
-        ImPlot.SetupAxes("Match Time", "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
+        ImPlot.SetupAxes(Loc.T("Match Time"), "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
         ImPlot.SetupLegend(ImPlotLocation.NorthWest, ImPlotLegendFlags.Horizontal);
 
         ImPlot.SetupAxisTicks(ImAxis.X1, ref _axisTicks[0], _axisTicks.Length, _axisLabels);
 
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetRivalWingsTeamColor(RivalWingsTeamName.Falcons))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Falcon Core", ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Core].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Falcon Core"), ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Core].Xs[0],
                 ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Core].Ys[0],
                 _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Core].Xs.Length, ImPlotStairsFlags.None);
         }
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetRivalWingsTeamColor(RivalWingsTeamName.Falcons) - new Vector4(0f, 0f, 0f, 0.6f))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 1f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Falcon Tower 1", ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower1].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Falcon Tower 1"), ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower1].Xs[0],
                 ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower1].Ys[0],
                 _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower1].Xs.Length, ImPlotStairsFlags.None);
-            ImPlot.PlotStairs("Falcon Tower 2", ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower2].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Falcon Tower 2"), ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower2].Xs[0],
                 ref _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower2].Ys[0],
                 _structureHealths[RivalWingsTeamName.Falcons][RivalWingsStructure.Tower2].Xs.Length, ImPlotStairsFlags.None);
         }
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetRivalWingsTeamColor(RivalWingsTeamName.Ravens))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Raven Core", ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Core].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Raven Core"), ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Core].Xs[0],
                 ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Core].Ys[0],
                 _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Core].Xs.Length, ImPlotStairsFlags.None);
         }
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetRivalWingsTeamColor(RivalWingsTeamName.Ravens) - new Vector4(0f, 0f, 0f, 0.6f))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 1f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Raven Tower 1", ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower1].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Raven Tower 1"), ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower1].Xs[0],
                 ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower1].Ys[0],
                 _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower1].Xs.Length, ImPlotStairsFlags.None);
-            ImPlot.PlotStairs("Raven Tower 2", ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower2].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Raven Tower 2"), ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower2].Xs[0],
                 ref _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower2].Ys[0],
                 _structureHealths[RivalWingsTeamName.Ravens][RivalWingsStructure.Tower2].Xs.Length, ImPlotStairsFlags.None);
         }
@@ -1143,7 +1143,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
     }
 
     private void DrawAllianceStacksGraph() {
-        using var plot = ImRaii.Plot("Soaring Stacks", new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
+        using var plot = ImRaii.Plot(Loc.T("Soaring Stacks"), new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
 
         if(!plot) {
             return;
@@ -1154,7 +1154,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         ImPlot.SetupAxisLimitsConstraints(ImAxis.X1, 0, 900);
         ImPlot.SetupAxisLimitsConstraints(ImAxis.Y1, 0, 21);
 
-        ImPlot.SetupAxes("Match Time", "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
+        ImPlot.SetupAxes(Loc.T("Match Time"), "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
         ImPlot.SetupLegend(ImPlotLocation.NorthWest, ImPlotLegendFlags.None);
 
         ImPlot.SetupAxisTicks(ImAxis.X1, ref _axisTicks[0], _axisTicks.Length, _axisLabels);
@@ -1171,7 +1171,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
     }
 
     private void DrawMechCountGraphs() {
-        using var plot = ImRaii.Plot("Mech Counts", new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
+        using var plot = ImRaii.Plot(Loc.T("Mech Counts"), new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
 
         if(!plot) {
             return;
@@ -1182,14 +1182,14 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         ImPlot.SetupAxisLimitsConstraints(ImAxis.X1, 0, 900);
         ImPlot.SetupAxisLimitsConstraints(ImAxis.Y1, 0, 7);
 
-        ImPlot.SetupAxes("Match Time", "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
+        ImPlot.SetupAxes(Loc.T("Match Time"), "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
         ImPlot.SetupLegend(ImPlotLocation.NorthWest, ImPlotLegendFlags.Horizontal);
 
         ImPlot.SetupAxisTicks(ImAxis.X1, ref _axisTicks[0], _axisTicks.Length, _axisLabels);
 
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetRivalWingsTeamColor(RivalWingsTeamName.Falcons))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Falcon Total", ref _totalMechCounts[RivalWingsTeamName.Falcons].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Falcon Total"), ref _totalMechCounts[RivalWingsTeamName.Falcons].Xs[0],
                 ref _totalMechCounts[RivalWingsTeamName.Falcons].Ys[0],
                 _totalMechCounts[RivalWingsTeamName.Falcons].Xs.Length, ImPlotStairsFlags.None);
         }
@@ -1210,7 +1210,7 @@ internal class RivalWingsMatchDetail : MatchDetail<RivalWingsMatch> {
         }
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetRivalWingsTeamColor(RivalWingsTeamName.Ravens))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Raven Total", ref _totalMechCounts[RivalWingsTeamName.Ravens].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Raven Total"), ref _totalMechCounts[RivalWingsTeamName.Ravens].Xs[0],
                 ref _totalMechCounts[RivalWingsTeamName.Ravens].Ys[0],
                 _totalMechCounts[RivalWingsTeamName.Ravens].Xs.Length, ImPlotStairsFlags.None);
         }

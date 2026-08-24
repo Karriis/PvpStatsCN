@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,9 +6,9 @@ namespace PvpStats.Windows.Filter;
 public class FLStatSourceFilter : StatSourceFilter {
 
     public static new Dictionary<StatSource, string> FilterNames => new() {
-        { StatSource.LocalPlayer, "Local Player" },
-        { StatSource.Teammate, "Teammates" },
-        { StatSource.Opponent, "Opponents" },
+        { StatSource.LocalPlayer, Loc.T("Local Player") },
+        { StatSource.Teammate, Loc.T("Teammates") },
+        { StatSource.Opponent, Loc.T("Opponents") },
     };
 
     public FLStatSourceFilter() {

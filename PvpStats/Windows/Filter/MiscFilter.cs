@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using System;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace PvpStats.Windows.Filter;
 public class MiscFilter : DataFilter {
 
-    public override string Name => "Misc";
+    public override string Name => Loc.T("Misc");
 
     public bool MustHaveStats { get; set; }
     public bool IncludeSpectated { get; set; } = true;
@@ -31,21 +31,21 @@ public class MiscFilter : DataFilter {
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         //bool mustHaveStats = MustHaveStats;
-        //if(ImGui.Checkbox("Must have post-game stats", ref mustHaveStats)) {
+        //if(ImGui.Checkbox(Loc.T("Must have post-game stats"), ref mustHaveStats)) {
         //    Task.Run(async () => {
         //        MustHaveStats = mustHaveStats;
         //        await Refresh();
         //    });
         //}
         bool includeSpectated = IncludeSpectated;
-        if(ImGui.Checkbox("Include spectated matches", ref includeSpectated)) {
+        if(ImGui.Checkbox(Loc.T("Include spectated matches"), ref includeSpectated)) {
             Task.Run(async () => {
                 IncludeSpectated = includeSpectated;
                 await Refresh();
             });
         }
         //bool showDeleted = ShowDeleted;
-        //if (ImGui.Checkbox("Show deleted/incomplete", ref showDeleted)) {
+        //if (ImGui.Checkbox(Loc.T("Show deleted/incomplete"), ref showDeleted)) {
         //    Task.Run(() => {
         //        ShowDeleted = showDeleted;
         //        Refresh();

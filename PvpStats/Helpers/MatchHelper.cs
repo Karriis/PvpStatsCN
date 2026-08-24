@@ -131,7 +131,7 @@ public static class MatchHelper {
     }
 
     public static string GetArenaName(CrystallineConflictMap map) {
-        return map switch {
+        return Loc.T(map switch {
             CrystallineConflictMap.Palaistra => "The Palaistra",
             CrystallineConflictMap.VolcanicHeart => "The Volcanic Heart",
             CrystallineConflictMap.CloudNine => "Cloud Nine",
@@ -140,7 +140,7 @@ public static class MatchHelper {
             CrystallineConflictMap.BaysideBattleground => "Bayside Battleground",
             CrystallineConflictMap.ArcheiaHarmonias => "Archeia Harmonias",
             _ => "Unknown",
-        };
+        });
     }
 
     public static CrystallineConflictTeamName GetTeamName(string name) {
@@ -154,11 +154,11 @@ public static class MatchHelper {
     }
 
     public static string GetTeamName(CrystallineConflictTeamName team) {
-        switch(team) {
-            case CrystallineConflictTeamName.Astra: return "Astra";
-            case CrystallineConflictTeamName.Umbra: return "Umbra";
-            default: return "Unknown";
-        }
+        return Loc.T(team switch {
+            CrystallineConflictTeamName.Astra => "Astra",
+            CrystallineConflictTeamName.Umbra => "Umbra",
+            _ => "Unknown",
+        });
     }
 
     public static ArenaTier GetTier(string name) {
@@ -191,25 +191,25 @@ public static class MatchHelper {
     }
 
     public static string GetFrontlineArenaName(FrontlineMap? map) {
-        return map switch {
+        return Loc.T(map switch {
             FrontlineMap.BorderlandRuins => "The Borderland Ruins",
             FrontlineMap.SealRock => "Seal Rock",
             FrontlineMap.FieldsOfGlory => "The Fields of Glory",
             FrontlineMap.OnsalHakair => "Onsal Hakair",
             FrontlineMap.WorqorChirteh => "Worqor Chirteh",
             _ => "Unknown",
-        };
+        });
     }
 
     public static string GetFrontlineArenaType(FrontlineMap? map) {
-        return map switch {
+        return Loc.T(map switch {
             FrontlineMap.BorderlandRuins => "Secure",
             FrontlineMap.SealRock => "Seize",
             FrontlineMap.FieldsOfGlory => "Shatter",
             FrontlineMap.OnsalHakair => "Danshig Naadam",
             FrontlineMap.WorqorChirteh => "Triumph",
             _ => "Unknown",
-        };
+        });
     }
 
     public static int GetFrontlineMaxPoints(FrontlineMap? map, DateTime? time = null) {
@@ -237,12 +237,12 @@ public static class MatchHelper {
     }
 
     public static string GetTeamName(FrontlineTeamName? team) {
-        switch(team) {
-            case FrontlineTeamName.Maelstrom: return "Maelstrom";
-            case FrontlineTeamName.Adders: return "Order of the Twin Adder";
-            case FrontlineTeamName.Flames: return "Immortal Flames";
-            default: return "Unknown";
-        }
+        return Loc.T(team switch {
+            FrontlineTeamName.Maelstrom => "Maelstrom",
+            FrontlineTeamName.Adders => "Order of the Twin Adder",
+            FrontlineTeamName.Flames => "Immortal Flames",
+            _ => "Unknown",
+        });
     }
 
     public static RivalWingsMap? GetRivalWingsMap(uint dutyId) {
@@ -257,38 +257,38 @@ public static class MatchHelper {
     }
 
     public static string GetArenaName(RivalWingsMap? map) {
-        return map switch {
+        return Loc.T(map switch {
             RivalWingsMap.Astragalos => "Astragalos",
             RivalWingsMap.HiddenGorge => "Hidden Gorge",
             _ => "Unknown",
-        };
+        });
     }
 
     public static string GetTeamName(RivalWingsTeamName? team) {
-        switch(team) {
-            case RivalWingsTeamName.Falcons: return "Falcons";
-            case RivalWingsTeamName.Ravens: return "Ravens";
-            default: return "Unknown";
-        }
+        return Loc.T(team switch {
+            RivalWingsTeamName.Falcons => "Falcons",
+            RivalWingsTeamName.Ravens => "Ravens",
+            _ => "Unknown",
+        });
     }
 
     public static string GetSuppliesName(RivalWingsSupplies? supplies) {
-        return supplies switch {
+        return Loc.T(supplies switch {
             RivalWingsSupplies.Gobtank => "Gobtank",
             RivalWingsSupplies.Ceruleum => "Main Ceruleum Tank",
             RivalWingsSupplies.Gobbiejuice => "Gobbiejuice",
             RivalWingsSupplies.Gobcrate => "Gobcrate",
             _ => "???",
-        };
+        });
     }
 
     public static string GetStructureName(RivalWingsStructure? structure) {
-        return structure switch {
+        return Loc.T(structure switch {
             RivalWingsStructure.Core => "Core",
             RivalWingsStructure.Tower1 => "North Tower",
             RivalWingsStructure.Tower2 => "South Tower",
             _ => "???",
-        };
+        });
     }
 
     public static string GetAllianceLetter(int alliance) {

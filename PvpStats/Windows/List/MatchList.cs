@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -21,7 +21,7 @@ internal abstract class MatchList<T> : FilteredList<T, T> where T : PvpMatch {
         Overwrite
     }
 
-    static string[] TagOperationCombo = { "Append", "Remove", "Overwrite" };
+    static string[] TagOperationCombo => [Loc.T("Append"), Loc.T("Remove"), Loc.T("Overwrite")];
 
     protected MatchCacheService<T> Cache;
 
@@ -78,14 +78,14 @@ internal abstract class MatchList<T> : FilteredList<T, T> where T : PvpMatch {
                 Task.Run(_plugin.WindowManager.CloseAllMatchWindows);
             }
         }
-        ImGuiHelper.WrappedTooltip("Close all open match windows");
+        ImGuiHelper.WrappedTooltip(Loc.T("Close all open match windows"));
         ImGui.SameLine();
         using(var font = ImRaii.PushFont(UiBuilder.IconFont)) {
             if(ImGui.Button($"{FontAwesomeIcon.Tags.ToIconString()}##SetTags")) {
                 ImGui.OpenPopup("MultiTagsPopup");
             }
         }
-        ImGuiHelper.WrappedTooltip("Set tags");
+        ImGuiHelper.WrappedTooltip(Loc.T("Set tags"));
         MultiTagPopup();
         ImGui.SameLine();
         using(var font = ImRaii.PushFont(UiBuilder.IconFont)) {
@@ -97,7 +97,7 @@ internal abstract class MatchList<T> : FilteredList<T, T> where T : PvpMatch {
                 _plugin.WindowManager.OpenConfigWindow();
             }
         }
-        ImGuiHelper.WrappedTooltip("Settings");
+        ImGuiHelper.WrappedTooltip(Loc.T("Settings"));
         ImGui.SameLine();
         ImGuiHelper.DonateButton();
     }
@@ -117,24 +117,24 @@ internal abstract class MatchList<T> : FilteredList<T, T> where T : PvpMatch {
     protected override void ContextMenuItems(T item) {
         bool isBookmarked = item.IsBookmarked;
         string tags = item.Tags;
-        if(ImGui.MenuItem($"Favorite##{item!.GetHashCode()}--AddBookmark", ImU8String.Empty, isBookmarked)) {
+        if(ImGui.MenuItem($"{Loc.T("Favorite")}##{item!.GetHashCode()}--AddBookmark", ImU8String.Empty, isBookmarked)) {
             item.IsBookmarked = !item.IsBookmarked;
             _plugin.DataQueue.QueueDataOperation(async () => {
                 await Cache.UpdateMatch(item);
             });
         }
-        if(ImGui.MenuItem($"Set tags##{item!.GetHashCode()}--SetTags")) {
+        if(ImGui.MenuItem($"{Loc.T("Set tags")}##{item!.GetHashCode()}--SetTags")) {
             //_plugin.Log.Debug($"Opening tags popup {item.Id}--TagsPopup");
             ImGui.OpenPopup(_popupIds[item.Id]);
         }
 
 #if DEBUG
-        if(ImGui.MenuItem($"Edit document##{item!.GetHashCode()}--FullEditContext")) {
+        if(ImGui.MenuItem($"{Loc.T("Edit document")}##{item!.GetHashCode()}--FullEditContext")) {
             _plugin.DataQueue.QueueDataOperation(() => {
                 OpenFullEditDetail(item);
             });
         }
-        if(ImGui.MenuItem($"Edit timeline##{item!.GetHashCode()}--OutputTimeline")) {
+        if(ImGui.MenuItem($"{Loc.T("Edit timeline")}##{item!.GetHashCode()}--OutputTimeline")) {
             _plugin.DataQueue.QueueDataOperation(() => {
                 var timeline = Cache.GetTimeline(item);
                 if(timeline != null) {
@@ -164,10 +164,10 @@ internal abstract class MatchList<T> : FilteredList<T, T> where T : PvpMatch {
                     _tagOperation = (MultiTagOperation)_operationIndex;
                 }
                 string tagsText = "";
-                ImGuiHelper.HelpMarker("Comma-separate tags. Hit enter to save and close.\n\n'Append' will add all listed tags (if not present) to all matches.\n'Remove' will remove all listed tags (if present) from all matches.\n'Overwrite' will overwrite all tags on all matches with the listed tags.", false, true);
+                ImGuiHelper.HelpMarker(Loc.T("Comma-separate tags. Hit enter to save and close.\n\n'Append' will add all listed tags (if not present) to all matches.\n'Remove' will remove all listed tags (if present) from all matches.\n'Overwrite' will overwrite all tags on all matches with the listed tags."), false, true);
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(200f * ImGuiHelpers.GlobalScale);
-                if(ImGui.InputTextWithHint("##TagsInput", "Enter tags...", ref tagsText, 500, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                if(ImGui.InputTextWithHint("##TagsInput", Loc.T("Enter tags..."), ref tagsText, 500, ImGuiInputTextFlags.EnterReturnsTrue)) {
                     ImGui.CloseCurrentPopup();
                     //not sure if this is fully thread-safe
                     _plugin.DataQueue.QueueDataOperation(async () => {

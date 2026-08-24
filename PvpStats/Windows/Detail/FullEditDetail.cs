@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
@@ -17,7 +17,7 @@ internal class FullEditDetail<T> : Window where T : PvpMatch {
     private T _dataModel;
     private string _dataString;
 
-    public FullEditDetail(Plugin plugin, MatchCacheService<T>? matchCache, T dataRow) : base($"Full Edit: {dataRow.GetHashCode()}") {
+    public FullEditDetail(Plugin plugin, MatchCacheService<T>? matchCache, T dataRow) : base(Loc.T("Full Edit: {0}", dataRow.GetHashCode())) {
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(500, 400),
             MaximumSize = new Vector2(800, 800)
@@ -51,7 +51,7 @@ internal class FullEditDetail<T> : Window where T : PvpMatch {
                 ImGui.InputTextMultiline("", ref _dataString, 999999, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetContentRegionAvail().Y));
             }
         }
-        if(ImGui.Button("Save and close")) {
+        if(ImGui.Button(Loc.T("Save and close"))) {
             _plugin.DataQueue.QueueDataOperation(async () => {
                 var returnValue = LiteDB.JsonSerializer.Deserialize(_dataString);
                 var x = BsonMapper.Global.Deserialize<T>(returnValue);

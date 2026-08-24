@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
@@ -26,7 +26,7 @@ internal abstract class MatchDetail<T> : Window where T : PvpMatch {
 
     private bool _popupOpen = false;
 
-    public MatchDetail(Plugin plugin, MatchCacheService<T> cache, T match) : base($"Match Details: {match.Id}") {
+    public MatchDetail(Plugin plugin, MatchCacheService<T> cache, T match) : base(Loc.T("Match Details: {0}", match.Id)) {
         Plugin = plugin;
         Cache = cache;
         Match = match;
@@ -78,7 +78,7 @@ internal abstract class MatchDetail<T> : Window where T : PvpMatch {
                 }
             }
         }
-        ImGuiHelper.WrappedTooltip("Favorite match");
+        ImGuiHelper.WrappedTooltip(Loc.T("Favorite match"));
 
         ImGui.SameLine();
         using(var font = ImRaii.PushFont(UiBuilder.IconFont)) {
@@ -89,7 +89,7 @@ internal abstract class MatchDetail<T> : Window where T : PvpMatch {
                 }
             }
         }
-        ImGuiHelper.WrappedTooltip("Set tags");
+        ImGuiHelper.WrappedTooltip(Loc.T("Set tags"));
         Plugin.WindowManager.SetTagsPopup(Match, Cache, ref _popupOpen);
     }
 

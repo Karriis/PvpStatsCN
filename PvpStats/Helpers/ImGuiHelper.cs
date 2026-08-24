@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
@@ -168,7 +168,7 @@ internal static class ImGuiHelper {
         } finally {
             ImGui.PopFont();
         }
-        WrappedTooltip("Copy CSV to clipboard");
+        WrappedTooltip(Loc.T("Copy CSV to clipboard"));
     }
 
     internal static void CSVButton(Action action) {
@@ -177,7 +177,7 @@ internal static class ImGuiHelper {
                 action.Invoke();
             }
         }
-        WrappedTooltip("Copy CSV to clipboard");
+        WrappedTooltip(Loc.T("Copy CSV to clipboard"));
     }
 
     internal static void DonateButton() {

@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Bindings.ImPlot;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
@@ -86,7 +86,7 @@ internal class CrystallineConflictRankGraph : Refreshable<CrystallineConflictMat
         }
         try {
             if(RankData.Count <= 0) {
-                ImGui.TextDisabled("No ranked matches for given filters.");
+                ImGui.TextDisabled(Loc.T("No ranked matches for given filters."));
                 return;
             }
 
@@ -109,7 +109,7 @@ internal class CrystallineConflictRankGraph : Refreshable<CrystallineConflictMat
                     axisFlags |= ImPlotAxisFlags.AutoFit;
                     _triggerFit = false;
                 }
-                ImPlot.SetupAxes("UTC Time", "", axisFlags, axisFlags);
+                ImPlot.SetupAxes(Loc.T("UTC Time"), "", axisFlags, axisFlags);
 
                 ImPlot.SetupAxisScale(ImAxis.X1, ImPlotScale.Time);
 
@@ -135,7 +135,7 @@ internal class CrystallineConflictRankGraph : Refreshable<CrystallineConflictMat
                     using(var style = ImRaii.PushColor(ImPlotCol.Line, ImGui.GetColorU32(_plugin.Configuration.Colors.Loss))) {
                         using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 10f * ImGuiHelpers.GlobalScale);
                         ImPlot.SetNextMarkerStyle(ImPlotMarker.None);
-                        ImPlot.PlotLine("Losses", ref xsLoss[0], ref ysLoss[0], xsLoss.Length, ImPlotLineFlags.Segments);
+                        ImPlot.PlotLine(Loc.T("Losses"), ref xsLoss[0], ref ysLoss[0], xsLoss.Length, ImPlotLineFlags.Segments);
                     }
                 }
 
@@ -143,7 +143,7 @@ internal class CrystallineConflictRankGraph : Refreshable<CrystallineConflictMat
                     using(var style = ImRaii.PushColor(ImPlotCol.Line, ImGui.GetColorU32(_plugin.Configuration.Colors.Win))) {
                         using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 5f * ImGuiHelpers.GlobalScale);
                         ImPlot.SetNextMarkerStyle(ImPlotMarker.None);
-                        ImPlot.PlotLine("Wins", ref xsWin[0], ref ysWin[0], xsWin.Length, ImPlotLineFlags.Segments);
+                        ImPlot.PlotLine(Loc.T("Wins"), ref xsWin[0], ref ysWin[0], xsWin.Length, ImPlotLineFlags.Segments);
                     }
                 }
 

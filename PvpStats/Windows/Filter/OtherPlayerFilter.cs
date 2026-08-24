@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using PvpStats.Helpers;
 using PvpStats.Types.Player;
 using System;
@@ -17,7 +17,7 @@ public enum TeamStatus {
 
 public class OtherPlayerFilter : DataFilter, IEquatable<OtherPlayerFilter> {
     public override string Name => "Player";
-    //public override string HelpMessage => "Comma-separate multiple party members.";
+    //public override string HelpMessage => Loc.T("Comma-separate multiple party members.");
     public string PlayerNamesRaw { get; set; } = "";
     public Job PlayerJob { get; set; }
     public bool AnyJob { get; set; } = true;
@@ -26,7 +26,7 @@ public class OtherPlayerFilter : DataFilter, IEquatable<OtherPlayerFilter> {
     private string _lastRefreshedValue = "";
 
     private List<string> _jobCombo = new();
-    private string[] _teamStatusCombo = { "Any Side", "Teammate", "Opponent" };
+    private string[] _teamStatusCombo = { Loc.T("Any Side"), Loc.T("Teammate"), Loc.T("Opponent") };
 
     public OtherPlayerFilter() { }
 
@@ -40,7 +40,7 @@ public class OtherPlayerFilter : DataFilter, IEquatable<OtherPlayerFilter> {
 
     internal OtherPlayerFilter(Plugin plugin, Func<Task> action, OtherPlayerFilter? filter = null) : base(plugin, action) {
         var allJobs = Enum.GetValues(typeof(Job)).Cast<Job>();
-        _jobCombo.Add("Any Job");
+        _jobCombo.Add(Loc.T("Any Job"));
         foreach(var job in allJobs) {
             _jobCombo.Add(PlayerJobHelper.GetNameFromJob(job));
         }
@@ -74,7 +74,7 @@ public class OtherPlayerFilter : DataFilter, IEquatable<OtherPlayerFilter> {
         int teamIndex = (int)TeamStatus;
 
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if(ImGui.InputTextWithHint("###PlayerNameInput", "Enter player name and world", ref playerName, 50)) {
+        if(ImGui.InputTextWithHint("###PlayerNameInput", Loc.T("Enter player name and world"), ref playerName, 50)) {
             if(playerName != _lastTextValue) {
                 _lastTextValue = playerName;
                 Task.Run(() => {

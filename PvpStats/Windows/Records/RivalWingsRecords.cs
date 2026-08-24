@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Helpers;
@@ -112,26 +112,26 @@ internal class RivalWingsRecords : MatchRecords<RivalWingsMatch> {
         }
 
         Superlatives = new();
-        AddSuperlative(longestWinStreakMatch, "Longest win streak", longestWinStreak.ToString());
-        AddSuperlative(longestLossStreakMatch, "Longest loss streak", longestLossStreak.ToString());
-        AddSuperlative(shortestMatch, "Shortest match", ImGuiHelper.GetTimeSpanString(shortestMatch?.MatchDuration ?? TimeSpan.Zero));
+        AddSuperlative(longestWinStreakMatch, Loc.T("Longest win streak"), longestWinStreak.ToString());
+        AddSuperlative(longestLossStreakMatch, Loc.T("Longest loss streak"), longestLossStreak.ToString());
+        AddSuperlative(shortestMatch, Loc.T("Shortest match"), ImGuiHelper.GetTimeSpanString(shortestMatch?.MatchDuration ?? TimeSpan.Zero));
         AddSuperlative(highestLoserProgMatch, "Highest loser core health", highestLoserProgMatch?.LoserProgress.ToString() ?? "");
         AddSuperlative(lowestWinnerProgMatch, "Lowest winner core health", lowestWinnerProgMatch?.WinnerProgress.ToString() ?? "");
-        AddSuperlative(mostKillsMatch, "Most kills", mostKills.ToString());
-        AddSuperlative(mostDeathsMatch, "Most deaths", mostDeaths.ToString());
-        AddSuperlative(mostAssistsMatch, "Most assists", mostAssists.ToString());
-        AddSuperlative(mostDamageToPCsMatch, "Most damage to PCs", mostDamageToPCs.ToString());
-        AddSuperlative(mostDamageToOtherMatch, "Most damage to other", mostDamageToOther.ToString());
-        AddSuperlative(mostDamageTakenMatch, "Most damage taken", mostDamageTaken.ToString());
-        AddSuperlative(mostHPRestoredMatch, "Most HP restored", mostHPRestored.ToString());
+        AddSuperlative(mostKillsMatch, Loc.T("Most kills"), mostKills.ToString());
+        AddSuperlative(mostDeathsMatch, Loc.T("Most deaths"), mostDeaths.ToString());
+        AddSuperlative(mostAssistsMatch, Loc.T("Most assists"), mostAssists.ToString());
+        AddSuperlative(mostDamageToPCsMatch, Loc.T("Most damage to PCs"), mostDamageToPCs.ToString());
+        AddSuperlative(mostDamageToOtherMatch, Loc.T("Most damage to other"), mostDamageToOther.ToString());
+        AddSuperlative(mostDamageTakenMatch, Loc.T("Most damage taken"), mostDamageTaken.ToString());
+        AddSuperlative(mostHPRestoredMatch, Loc.T("Most HP restored"), mostHPRestored.ToString());
         AddSuperlative(mostCeruleumMatch, "Most ceruleum earned", mostCeruleum.ToString());
-        AddSuperlative(highestKillsPerMinMatch, "Most kills per min", mostKillsPerMin.ToString("0.00"));
-        AddSuperlative(highestDeathsPerMinMatch, "Most deaths per min", mostDeathsPerMin.ToString("0.00"));
-        AddSuperlative(highestAssistsPerMinMatch, "Most assists per min", mostAssistsPerMin.ToString("0.00"));
-        AddSuperlative(highestDamageToPCsPerMinMatch, "Most damage to PCs per min", mostDamageToPCsPerMin.ToString("0"));
-        AddSuperlative(highestDamageToOtherPerMinMatch, "Most damage to other per min", mostDamageToOtherPerMin.ToString("0"));
-        AddSuperlative(highestDamageTakenPerMinMatch, "Most damage taken per min", mostDamageTakenPerMin.ToString("0"));
-        AddSuperlative(highestHPRestoredPerMinMatch, "Most HP restored per min", mostHPRestoredPerMin.ToString("0"));
+        AddSuperlative(highestKillsPerMinMatch, Loc.T("Most kills per min"), mostKillsPerMin.ToString("0.00"));
+        AddSuperlative(highestDeathsPerMinMatch, Loc.T("Most deaths per min"), mostDeathsPerMin.ToString("0.00"));
+        AddSuperlative(highestAssistsPerMinMatch, Loc.T("Most assists per min"), mostAssistsPerMin.ToString("0.00"));
+        AddSuperlative(highestDamageToPCsPerMinMatch, Loc.T("Most damage to PCs per min"), mostDamageToPCsPerMin.ToString("0"));
+        AddSuperlative(highestDamageToOtherPerMinMatch, Loc.T("Most damage to other per min"), mostDamageToOtherPerMin.ToString("0"));
+        AddSuperlative(highestDamageTakenPerMinMatch, Loc.T("Most damage taken per min"), mostDamageTakenPerMin.ToString("0"));
+        AddSuperlative(highestHPRestoredPerMinMatch, Loc.T("Most HP restored per min"), mostHPRestoredPerMin.ToString("0"));
         AddSuperlative(highestCeruleumPerMinMatch, "Most ceruleum earned per min", mostCeruleumPerMin.ToString("0.00"));
         AddSuperlative(fastestFlyingHighMatch, "* Fastest Flying High", ImGuiHelper.GetTimeSpanString(fastestFlyingHigh));
         return Task.CompletedTask;
@@ -141,10 +141,10 @@ internal class RivalWingsRecords : MatchRecords<RivalWingsMatch> {
         using(var table = ImRaii.Table($"##{match.GetHashCode()}--Table", 4, ImGuiTableFlags.NoBordersInBody | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.NoClip | ImGuiTableFlags.NoSavedSettings)) {
             if(table) {
                 var widthStyle = Plugin.Configuration.StretchScoreboardColumns ?? false ? ImGuiTableColumnFlags.WidthStretch : ImGuiTableColumnFlags.WidthFixed;
-                ImGui.TableSetupColumn("Time", widthStyle, ImGuiHelpers.GlobalScale * 110f);
-                ImGui.TableSetupColumn("Arena", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 155f);
-                ImGui.TableSetupColumn("Job", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
-                ImGui.TableSetupColumn("Result", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
+                ImGui.TableSetupColumn(Loc.T("Time"), widthStyle, ImGuiHelpers.GlobalScale * 110f);
+                ImGui.TableSetupColumn(Loc.T("Arena"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 155f);
+                ImGui.TableSetupColumn(Loc.T("Job"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
+                ImGui.TableSetupColumn(Loc.T("Result"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
 
                 ImGui.TableNextColumn();
                 ImGui.Text($"{match.DutyStartTime.ToLocalTime():yyyy-MM-dd HH:mm}");
@@ -158,7 +158,7 @@ internal class RivalWingsRecords : MatchRecords<RivalWingsMatch> {
                 ImGui.TextColored(Plugin.Configuration.GetJobColor(localPlayerJob), localPlayerJob.ToString());
                 ImGui.TableNextColumn();
                 var color = match.IsWin ? Plugin.Configuration.Colors.Win : match.IsLoss ? Plugin.Configuration.Colors.Loss : Plugin.Configuration.Colors.Other;
-                var result = match.IsWin ? "WIN" : match.IsLoss ? "LOSS" : "???";
+                var result = match.IsWin ? Loc.T("WIN") : match.IsLoss ? Loc.T("LOSS") : "???";
                 ImGuiHelper.CenterAlignCursor(result);
                 ImGui.TextColored(color, result);
             }
@@ -205,15 +205,15 @@ internal class RivalWingsRecords : MatchRecords<RivalWingsMatch> {
                     default:
                     case RivalWingsMech.Chaser:
                         ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.ChaserIcons[RivalWingsTeamName.Unknown]), size, uv0, uv1);
-                        ImGuiHelper.WrappedTooltip("Cruise Chaser");
+                        ImGuiHelper.WrappedTooltip(Loc.T("Cruise Chaser"));
                         break;
                     case RivalWingsMech.Oppressor:
                         ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.OppressorIcons[RivalWingsTeamName.Unknown]), size, uv0, uv1);
-                        ImGuiHelper.WrappedTooltip("Oppressor");
+                        ImGuiHelper.WrappedTooltip(Loc.T("Oppressor"));
                         break;
                     case RivalWingsMech.Justice:
                         ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.JusticeIcons[RivalWingsTeamName.Unknown]), size, uv0, uv1);
-                        ImGuiHelper.WrappedTooltip("Brute Justice");
+                        ImGuiHelper.WrappedTooltip(Loc.T("Brute Justice"));
                         break;
                 };
                 ImGui.TableNextColumn();

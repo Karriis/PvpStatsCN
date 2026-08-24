@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +13,7 @@ public enum TagLogic {
 }
 
 internal class TagFilter : DataFilter {
-    public override string Name => "Tags";
+    public override string Name => Loc.T("Tags");
     public override string HelpMessage => "Comma-separate multiple tags.\n'AND' will include matches that have all tags.\n'OR' will include matches that have at least one tag.\n'NAND' will include matches that don't have all tags.\n'NOR' will include matches that don't have any of the listed tags.";
     public string TagsRaw { get; set; } = "";
     public TagLogic Logic { get; set; } = TagLogic.AND;
@@ -52,7 +52,7 @@ internal class TagFilter : DataFilter {
         int logicIndex = (int)Logic;
         bool allowPartial = AllowPartial;
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if(ImGui.InputTextWithHint("##TagsInput", "Enter tags...", ref tags, 100)) {
+        if(ImGui.InputTextWithHint("##TagsInput", Loc.T("Enter tags..."), ref tags, 100)) {
             if(tags != _lastTextValue) {
                 _lastTextValue = tags;
                 Task.Run(() => {
@@ -69,7 +69,7 @@ internal class TagFilter : DataFilter {
             });
         }
         ImGui.SameLine();
-        if(ImGui.Checkbox("Partial matches", ref allowPartial)) {
+        if(ImGui.Checkbox(Loc.T("Partial matches"), ref allowPartial)) {
             Task.Run(async () => {
                 AllowPartial = allowPartial;
                 await Refresh();

@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -20,15 +20,15 @@ internal class CrystallineConflictPvPProfile {
 
     public unsafe void Draw() {
         var pvpProfile = PvPProfile.Instance();
-        ImGuiHelper.HelpMarker("This data comes from SE's game servers.", false);
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Casual:");
+        ImGuiHelper.HelpMarker(Loc.T("This data comes from SE's game servers."), false);
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Casual:"));
         if(pvpProfile != null) {
             using(ImRaii.PushId("casualTable")) {
                 DrawTable(pvpProfile->CrystallineConflictCasualMatches, pvpProfile->CrystallineConflictCasualMatchesWon);
             }
         }
         ImGui.Separator();
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Current Ranked Season:");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Current Ranked Season:"));
         if(pvpProfile != null) {
             using(ImRaii.PushId("rankedTable")) {
                 DrawTable(pvpProfile->CrystallineConflictRankedMatches, pvpProfile->CrystallineConflictRankedMatchesWon);
@@ -39,7 +39,7 @@ internal class CrystallineConflictPvPProfile {
                     ImGui.TableSetupColumn("description", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 158f);
                     ImGui.TableSetupColumn($"value", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 45f);
                     ImGui.TableNextColumn();
-                    ImGui.Text("Current Rank: ");
+                    ImGui.Text(Loc.T("Current Rank: "));
                     ImGui.TableNextColumn();
                     PlayerRank curRank = new() {
                         Tier = (ArenaTier)pvpProfile->CrystallineConflictCurrentRank,
@@ -50,7 +50,7 @@ internal class CrystallineConflictPvPProfile {
 
                     ImGui.Text($"{curRank}");
                     ImGui.TableNextColumn();
-                    ImGui.Text("Highest Rank: ");
+                    ImGui.Text(Loc.T("Highest Rank: "));
                     ImGui.TableNextColumn();
                     PlayerRank peakRank = new() {
                         Tier = (ArenaTier)pvpProfile->CrystallineConflictHighestRank,
@@ -72,13 +72,13 @@ internal class CrystallineConflictPvPProfile {
                 ImGui.TableSetupColumn($"rate", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 45f);
 
                 ImGui.TableNextColumn();
-                ImGui.Text("Matches: ");
+                ImGui.Text(Loc.T("Matches: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{matches.ToString("N0")}");
                 ImGui.TableNextColumn();
 
                 ImGui.TableNextColumn();
-                ImGui.Text("Wins: ");
+                ImGui.Text(Loc.T("Wins: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{wins.ToString("N0")}");
                 ImGui.TableNextColumn();

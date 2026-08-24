@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Helpers;
@@ -167,31 +167,31 @@ internal class FrontlineMeta : Refreshable<FrontlineMatch> {
         using(var table = ImRaii.Table($"MatchStatsTable", 8, ImGuiTableFlags.PadOuterX | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.NoClip | ImGuiTableFlags.NoSavedSettings)) {
             if(table) {
                 float offset = -1f;
-                ImGui.TableSetupColumn("Description", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 120f);
-                ImGui.TableSetupColumn("Kills");
-                ImGui.TableSetupColumn($"Deaths");
-                ImGui.TableSetupColumn($"Assists");
-                ImGui.TableSetupColumn("Damage to PCs");
-                ImGui.TableSetupColumn("Damage to Other");
-                ImGui.TableSetupColumn($"Damage Taken");
-                ImGui.TableSetupColumn($"HP Restored");
+                ImGui.TableSetupColumn(Loc.T("Description"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 120f);
+                ImGui.TableSetupColumn(Loc.T("Kills"));
+                ImGui.TableSetupColumn(Loc.T("Deaths"));
+                ImGui.TableSetupColumn(Loc.T("Assists"));
+                ImGui.TableSetupColumn(Loc.T("Damage to PCs"));
+                ImGui.TableSetupColumn(Loc.T("Damage to Other"));
+                ImGui.TableSetupColumn(Loc.T("Damage Taken"));
+                ImGui.TableSetupColumn(Loc.T("HP Restored"));
 
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawTableHeader("", 2, true, true, offset);
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawTableHeader("Kills", 2, true, true, offset);
+                ImGuiHelper.DrawTableHeader(Loc.T("Kills"), 2, true, true, offset);
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawTableHeader("Deaths", 2, true, true, offset);
+                ImGuiHelper.DrawTableHeader(Loc.T("Deaths"), 2, true, true, offset);
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawTableHeader("Assists", 2, true, true, offset);
+                ImGuiHelper.DrawTableHeader(Loc.T("Assists"), 2, true, true, offset);
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawTableHeader("Damage\nto PCs", 2, true, true, offset);
+                ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto PCs"), 2, true, true, offset);
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawTableHeader("Damage\nto Other", 2, true, true, offset);
+                ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto Other"), 2, true, true, offset);
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawTableHeader("Damage\nTaken", 2, true, true, offset);
+                ImGuiHelper.DrawTableHeader(Loc.T("Damage\nTaken"), 2, true, true, offset);
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawTableHeader("HP\nRestored", 2, true, true, offset);
+                ImGuiHelper.DrawTableHeader(Loc.T("HP\nRestored"), 2, true, true, offset);
 
                 var minFactor = 1.5f;
                 var maxFactor = 4f;
@@ -202,7 +202,7 @@ internal class FrontlineMeta : Refreshable<FrontlineMatch> {
 
                 //top 1 contribution
                 ImGui.TableNextColumn();
-                ImGui.Text("Top 1 Team Contrib.");
+                ImGui.Text(Loc.T("Top 1 Team Contrib."));
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell((float)Top1Contribs.Kills, Plugin.Configuration.Colors.StatHigh, Plugin.Configuration.Colors.StatLow, minContrib, maxContrib, Plugin.Configuration.ColorScaleStats, "P1", offset);
                 ImGui.TableNextColumn();
@@ -220,7 +220,7 @@ internal class FrontlineMeta : Refreshable<FrontlineMatch> {
 
                 //top 1 factor
                 ImGui.TableNextColumn();
-                ImGui.Text("Factor");
+                ImGui.Text(Loc.T("Factor"));
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell($"{Top1ContribFactor.Kills:#.0}x", offset);
                 ImGui.TableNextColumn();
@@ -242,7 +242,7 @@ internal class FrontlineMeta : Refreshable<FrontlineMatch> {
 
                 //top 4 contribution
                 ImGui.TableNextColumn();
-                ImGui.Text("Top 4 Team Contrib.");
+                ImGui.Text(Loc.T("Top 4 Team Contrib."));
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell((float)Top4Contribs.Kills, Plugin.Configuration.Colors.StatHigh, Plugin.Configuration.Colors.StatLow, minContrib * 4, maxContrib * 4, Plugin.Configuration.ColorScaleStats, "P1", offset);
                 ImGui.TableNextColumn();
@@ -260,7 +260,7 @@ internal class FrontlineMeta : Refreshable<FrontlineMatch> {
 
                 //top 4 factor
                 ImGui.TableNextColumn();
-                ImGui.Text("Factor");
+                ImGui.Text(Loc.T("Factor"));
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell($"{Top4ContribFactor.Kills:#.0}x", offset);
                 ImGui.TableNextColumn();
@@ -282,7 +282,7 @@ internal class FrontlineMeta : Refreshable<FrontlineMatch> {
 
                 //gini coefficients
                 ImGui.TableNextColumn();
-                ImGui.Text("Gini coeff.");
+                ImGui.Text(Loc.T("Gini coeff."));
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell($"{GiniCoefficients.Kills:0.00}", offset);
                 ImGui.TableNextColumn();

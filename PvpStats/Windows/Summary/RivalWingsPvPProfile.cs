@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -15,13 +15,13 @@ internal class RivalWingsPvPProfile {
 
     public unsafe void Draw() {
         var pvpProfile = PvPProfile.Instance();
-        ImGuiHelper.HelpMarker("This data comes from SE's game servers.", false);
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Overall Performance:");
+        ImGuiHelper.HelpMarker(Loc.T("This data comes from SE's game servers."), false);
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Overall Performance:"));
         if(pvpProfile != null) {
             DrawTable(pvpProfile->RivalWingsTotalMatches, pvpProfile->RivalWingsTotalMatchesWon);
         }
         ImGui.Separator();
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Weekly Performance:");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Weekly Performance:"));
         if(pvpProfile != null) {
             DrawTable(pvpProfile->RivalWingsWeeklyMatches, pvpProfile->RivalWingsWeeklyMatchesWon);
         }
@@ -35,13 +35,13 @@ internal class RivalWingsPvPProfile {
                 ImGui.TableSetupColumn($"rate", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 45f);
 
                 ImGui.TableNextColumn();
-                ImGui.Text("Matches: ");
+                ImGui.Text(Loc.T("Matches: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{matches:N0}");
                 ImGui.TableNextColumn();
 
                 ImGui.TableNextColumn();
-                ImGui.Text("Wins: ");
+                ImGui.Text(Loc.T("Wins: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{wins:N0}");
                 ImGui.TableNextColumn();

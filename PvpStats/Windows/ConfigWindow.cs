@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -26,7 +26,7 @@ internal class ConfigWindow : Window {
     private float _saveOpacity = 0f;
     private bool _ipcUpdateInProgress = false;
 
-    public ConfigWindow(Plugin plugin) : base("PvP Tracker Settings") {
+    public ConfigWindow(Plugin plugin) : base(Loc.T("PvP Tracker Settings")) {
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(525, 500),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
@@ -71,22 +71,22 @@ internal class ConfigWindow : Window {
     public override void Draw() {
         //_plugin.Log.Verbose("draw config");
         using(var tabBar = ImRaii.TabBar("SettingsTabBar")) {
-            using(var tab = ImRaii.TabItem("Interface")) {
+            using(var tab = ImRaii.TabItem(Loc.T("Interface"))) {
                 if(tab) {
                     DrawInterfaceSettings();
                 }
             }
-            using(var tab = ImRaii.TabItem("Player Links")) {
+            using(var tab = ImRaii.TabItem(Loc.T("Player Links"))) {
                 if(tab) {
                     DrawPlayerLinkSettings();
                 }
             }
-            using(var tab = ImRaii.TabItem("Performance")) {
+            using(var tab = ImRaii.TabItem(Loc.T("Performance"))) {
                 if(tab) {
                     DrawPerformanceSettings();
                 }
             }
-            using(var tab = ImRaii.TabItem("Misc")) {
+            using(var tab = ImRaii.TabItem(Loc.T("Misc"))) {
                 if(tab) {
                     DrawMiscSettings();
                 }
@@ -96,61 +96,70 @@ internal class ConfigWindow : Window {
 
     private void DrawInterfaceSettings() {
 
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "General");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("General"));
+
+        var language = (int)_plugin.Configuration.UiLanguage;
+        string[] languageOptions = [Loc.T("Auto"), Loc.T("English"), Loc.T("Simplified Chinese")];
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 4f);
+        if(ImGui.Combo(Loc.T("Language"), ref language, languageOptions, languageOptions.Length)) {
+            _plugin.Configuration.UiLanguage = (UiLanguageMode)language;
+            _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
+        }
+        ImGuiHelper.HelpMarker(Loc.T("The interface updates immediately. Window titles update after the plugin is reloaded."), true, true);
 
         int stretchColumns = _plugin.Configuration.StretchScoreboardColumns ?? false ? 1 : 0;
-        string[] columnStyles = ["Fixed", "Stretch"];
+        string[] columnStyles = [Loc.T("Fixed"), Loc.T("Stretch")];
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 4f);
-        if(ImGui.Combo("Column styles", ref stretchColumns, columnStyles, columnStyles.Length)) {
+        if(ImGui.Combo(Loc.T("Column styles"), ref stretchColumns, columnStyles, columnStyles.Length)) {
             bool isStretch = Convert.ToBoolean(stretchColumns);
             _plugin.Configuration.StretchScoreboardColumns = isStretch;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         ImGui.Separator();
 
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Tracker Window");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Tracker Window"));
 
         var filterHeight = (int)_plugin.Configuration.CCWindowConfig.FilterHeight;
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 2f);
-        if(ImGui.SliderInt("Filter child height", ref filterHeight, 100, 500)) {
+        if(ImGui.SliderInt(Loc.T("Filter child height"), ref filterHeight, 100, 500)) {
             _plugin.Configuration.CCWindowConfig.FilterHeight = (uint)filterHeight;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         bool filterHeightAdjust = _plugin.Configuration.AdjustWindowHeightOnFilterCollapse;
-        if(ImGui.Checkbox("Offset window size when filters hidden", ref filterHeightAdjust)) {
+        if(ImGui.Checkbox(Loc.T("Offset window size when filters hidden"), ref filterHeightAdjust)) {
             _plugin.Configuration.AdjustWindowHeightOnFilterCollapse = filterHeightAdjust;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
-        ImGuiHelper.HelpMarker("The height of the window will be offset by the height of the filter child whenever filters are shown or hidden.", true, true);
+        ImGuiHelper.HelpMarker(Loc.T("The height of the window will be offset by the height of the filter child whenever filters are shown or hidden."), true, true);
         bool minimize = _plugin.Configuration.MinimizeWindow;
-        if(ImGui.Checkbox("Shrink window on collapse", ref minimize)) {
+        if(ImGui.Checkbox(Loc.T("Shrink window on collapse"), ref minimize)) {
             _plugin.Configuration.MinimizeWindow = minimize;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         bool minimizeDir = _plugin.Configuration.MinimizeDirectionLeft;
-        if(ImGui.Checkbox("Anchor left-side of window on shrink", ref minimizeDir)) {
+        if(ImGui.Checkbox(Loc.T("Anchor left-side of window on shrink"), ref minimizeDir)) {
             _plugin.Configuration.MinimizeDirectionLeft = minimizeDir;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
-        ImGuiHelper.HelpMarker("Only applies to previous setting. Otherwise anchors on the right-side.", true, true);
+        ImGuiHelper.HelpMarker(Loc.T("Only applies to previous setting. Otherwise anchors on the right-side."), true, true);
         bool saveTabSize = _plugin.Configuration.PersistWindowSizePerTab;
-        if(ImGui.Checkbox("Save window size per tab", ref saveTabSize)) {
+        if(ImGui.Checkbox(Loc.T("Save window size per tab"), ref saveTabSize)) {
             _plugin.Configuration.PersistWindowSizePerTab = saveTabSize;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         bool resizeLeft = _plugin.Configuration.ResizeWindowLeft;
-        if(ImGui.Checkbox("Resize window leftwards on tab switch", ref resizeLeft)) {
+        if(ImGui.Checkbox(Loc.T("Resize window leftwards on tab switch"), ref resizeLeft)) {
             _plugin.Configuration.ResizeWindowLeft = resizeLeft;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         bool colorScale = _plugin.Configuration.ColorScaleStats;
-        if(ImGui.Checkbox("Color scale stat values", ref colorScale)) {
+        if(ImGui.Checkbox(Loc.T("Color scale stat values"), ref colorScale)) {
             _plugin.Configuration.ColorScaleStats = colorScale;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         ImGui.Separator();
 
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Match Details Window");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Match Details Window"));
 
         //bool resizeableWindow = _plugin.Configuration.ResizeableMatchWindow;
         //if(ImGui.Checkbox("Make window resizeable", ref resizeableWindow)) {
@@ -160,27 +169,27 @@ internal class ConfigWindow : Window {
         //ImGuiHelper.HelpMarker("Only affects Crystalline Conflict currently. Reopen windows to reflect changes.", true, true);
 
         bool showBackgroundImage = _plugin.Configuration.ShowBackgroundImage;
-        if(ImGui.Checkbox("Show background image", ref showBackgroundImage)) {
+        if(ImGui.Checkbox(Loc.T("Show background image"), ref showBackgroundImage)) {
             _plugin.Configuration.ShowBackgroundImage = showBackgroundImage;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         bool playerTeamLeft = _plugin.Configuration.LeftPlayerTeam;
-        if(ImGui.Checkbox("Always show player team on left", ref playerTeamLeft)) {
+        if(ImGui.Checkbox(Loc.T("Always show player team on left"), ref playerTeamLeft)) {
             _plugin.Configuration.LeftPlayerTeam = playerTeamLeft;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         bool orderFLTeams = _plugin.Configuration.OrderFrontlineTeamsByPlacement ?? false;
-        if(ImGui.Checkbox("Order Frontline teams by placement", ref orderFLTeams)) {
+        if(ImGui.Checkbox(Loc.T("Order Frontline teams by placement"), ref orderFLTeams)) {
             _plugin.Configuration.OrderFrontlineTeamsByPlacement = orderFLTeams;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
-        ImGuiHelper.HelpMarker("This will override the preceding setting.", true, true);
+        ImGuiHelper.HelpMarker(Loc.T("This will override the preceding setting."), true, true);
         bool anchorTeamNames = _plugin.Configuration.AnchorTeamNames;
-        if(ImGui.Checkbox("Anchor team stats", ref anchorTeamNames)) {
+        if(ImGui.Checkbox(Loc.T("Anchor team stats"), ref anchorTeamNames)) {
             _plugin.Configuration.AnchorTeamNames = anchorTeamNames;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
-        ImGuiHelper.HelpMarker("Team stat rows will not be affected by sorting.", true, true);
+        ImGuiHelper.HelpMarker(Loc.T("Team stat rows will not be affected by sorting."), true, true);
 
         //bool jobIconCells = _plugin.Configuration.JobIconCells ?? false;
         //if(ImGui.Checkbox("Show job icons in scoreboard", ref jobIconCells)) {
@@ -198,7 +207,7 @@ internal class ConfigWindow : Window {
 
         var teamRowAlpha = _plugin.Configuration.TeamRowAlpha;
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 2f);
-        if(ImGui.SliderFloat("Team row alpha", ref teamRowAlpha, 0f, 1f)) {
+        if(ImGui.SliderFloat(Loc.T("Team row alpha"), ref teamRowAlpha, 0f, 1f)) {
             _plugin.Configuration.TeamRowAlpha = teamRowAlpha;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
@@ -209,10 +218,10 @@ internal class ConfigWindow : Window {
                 _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
             }
         }
-        ImGuiHelper.WrappedTooltip("Reset");
+        ImGuiHelper.WrappedTooltip(Loc.T("Reset"));
         var playerRowAlpha = _plugin.Configuration.PlayerRowAlpha;
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 2f);
-        if(ImGui.SliderFloat("Player row alpha", ref playerRowAlpha, 0f, 1f)) {
+        if(ImGui.SliderFloat(Loc.T("Player row alpha"), ref playerRowAlpha, 0f, 1f)) {
             _plugin.Configuration.PlayerRowAlpha = playerRowAlpha;
             _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
@@ -223,28 +232,28 @@ internal class ConfigWindow : Window {
                 _plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
             }
         }
-        ImGuiHelper.WrappedTooltip("Reset");
+        ImGuiHelper.WrappedTooltip(Loc.T("Reset"));
 
         ImGui.Separator();
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Colors");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Colors"));
         DrawColorSettings();
     }
 
     private void DrawColorSettings() {
-        if(ImGui.Button("Reset to Defaults")) {
+        if(ImGui.Button(Loc.T("Reset to Defaults"))) {
             _plugin.Configuration.Colors = new();
             //_plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
 
         ImGui.SameLine();
 
-        if(ImGui.Button("Revert Changes")) {
+        if(ImGui.Button(Loc.T("Revert Changes"))) {
             _plugin.DataQueue.QueueDataOperation(() => {
                 var cfgSaved = _plugin.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
                 _plugin.Configuration.Colors = cfgSaved.Colors;
             });
         }
-        ImGuiHelper.HelpMarker("Colors will lock in after this window is closed or a non-color setting is changed.");
+        ImGuiHelper.HelpMarker(Loc.T("Colors will lock in after this window is closed or a non-color setting is changed."));
 
         using var table = ImRaii.Table("ColorSettingsTable", 3);
         if(!table) {
@@ -256,115 +265,115 @@ internal class ConfigWindow : Window {
 
         ImGui.TableNextColumn();
         var headerColor = _plugin.Configuration.Colors.Header;
-        if(ImGui.ColorEdit4("Headers", ref headerColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Headers"), ref headerColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Header = headerColor;
         }
         ImGui.TableNextColumn();
         var favoriteColor = _plugin.Configuration.Colors.Favorite;
-        if(ImGui.ColorEdit4("Favorites", ref favoriteColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Favorites"), ref favoriteColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Favorite = favoriteColor;
         }
         ImGui.TableNextRow();
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         var winColor = _plugin.Configuration.Colors.Win;
-        if(ImGui.ColorEdit4("Wins", ref winColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Wins"), ref winColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Win = winColor;
         }
         ImGui.TableNextColumn();
         var lossColor = _plugin.Configuration.Colors.Loss;
-        if(ImGui.ColorEdit4("Losses", ref lossColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Losses"), ref lossColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Loss = lossColor;
         }
         ImGui.TableNextColumn();
         var otherColor = _plugin.Configuration.Colors.Other;
-        if(ImGui.ColorEdit4("Draws", ref otherColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Draws"), ref otherColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Other = otherColor;
         }
         ImGui.TableNextRow();
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         var localPlayerColor = _plugin.Configuration.Colors.CCLocalPlayer;
-        if(ImGui.ColorEdit4("Local Player", ref localPlayerColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Local Player"), ref localPlayerColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.CCLocalPlayer = localPlayerColor;
         }
         ImGui.TableNextColumn();
         var playerTeamColor = _plugin.Configuration.Colors.CCPlayerTeam;
-        if(ImGui.ColorEdit4("Player Team", ref playerTeamColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Player Team"), ref playerTeamColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.CCPlayerTeam = playerTeamColor;
         }
         ImGui.TableNextColumn();
         var enemyTeamColor = _plugin.Configuration.Colors.CCEnemyTeam;
-        if(ImGui.ColorEdit4("Enemy Team", ref enemyTeamColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Enemy Team"), ref enemyTeamColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.CCEnemyTeam = enemyTeamColor;
         }
         ImGui.TableNextRow();
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         var maelstromColor = _plugin.Configuration.Colors.Maelstrom;
-        if(ImGui.ColorEdit4("Maelstrom", ref maelstromColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Maelstrom"), ref maelstromColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Maelstrom = maelstromColor;
         }
         ImGui.TableNextColumn();
         var addersColor = _plugin.Configuration.Colors.Adders;
-        if(ImGui.ColorEdit4("Adders", ref addersColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Adders"), ref addersColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Adders = addersColor;
         }
         ImGui.TableNextColumn();
         var flamesColor = _plugin.Configuration.Colors.Flames;
-        if(ImGui.ColorEdit4("Immortal Flames", ref flamesColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Immortal Flames"), ref flamesColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Flames = flamesColor;
         }
         ImGui.TableNextRow();
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         var falconsColor = _plugin.Configuration.Colors.Falcons;
-        if(ImGui.ColorEdit4("Falcons", ref falconsColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Falcons"), ref falconsColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Falcons = falconsColor;
         }
         ImGui.TableNextColumn();
         var ravensColor = _plugin.Configuration.Colors.Ravens;
-        if(ImGui.ColorEdit4("Ravens", ref ravensColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Ravens"), ref ravensColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Ravens = ravensColor;
         }
         ImGui.TableNextRow();
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         var tankColor = _plugin.Configuration.Colors.Tank;
-        if(ImGui.ColorEdit4("Tank", ref tankColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Tank"), ref tankColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Tank = tankColor;
         }
         ImGui.TableNextColumn();
         var healerColor = _plugin.Configuration.Colors.Healer;
-        if(ImGui.ColorEdit4("Healer", ref healerColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Healer"), ref healerColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Healer = healerColor;
         }
         ImGui.TableNextColumn();
         var meleeColor = _plugin.Configuration.Colors.Melee;
-        if(ImGui.ColorEdit4("Melee", ref meleeColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Melee"), ref meleeColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Melee = meleeColor;
         }
         ImGui.TableNextColumn();
         var rangedColor = _plugin.Configuration.Colors.Ranged;
-        if(ImGui.ColorEdit4("Ranged", ref rangedColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Ranged"), ref rangedColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Ranged = rangedColor;
         }
         ImGui.TableNextColumn();
         var casterColor = _plugin.Configuration.Colors.Caster;
-        if(ImGui.ColorEdit4("Caster", ref casterColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Caster"), ref casterColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.Caster = casterColor;
         }
         ImGui.TableNextRow();
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         var statHighColor = _plugin.Configuration.Colors.StatHigh;
-        if(ImGui.ColorEdit4("High stat", ref statHighColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("High stat"), ref statHighColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.StatHigh = statHighColor;
             //_plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         ImGui.TableNextColumn();
         var statLowColor = _plugin.Configuration.Colors.StatLow;
-        if(ImGui.ColorEdit4("Low stat", ref statLowColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Low stat"), ref statLowColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.StatLow = statLowColor;
             //_plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
@@ -372,13 +381,13 @@ internal class ConfigWindow : Window {
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         var playerRowColor = _plugin.Configuration.Colors.PlayerRowText;
-        if(ImGui.ColorEdit4("Player row text", ref playerRowColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Player row text"), ref playerRowColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.PlayerRowText = playerRowColor;
             //_plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
         ImGui.TableNextColumn();
         var teamRowColor = _plugin.Configuration.Colors.TeamRowText;
-        if(ImGui.ColorEdit4("Team row text", ref teamRowColor, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Team row text"), ref teamRowColor, ImGuiColorEditFlags.NoInputs)) {
             _plugin.Configuration.Colors.TeamRowText = teamRowColor;
             //_plugin.DataQueue.QueueDataOperation(_plugin.Configuration.Save);
         }
@@ -386,14 +395,14 @@ internal class ConfigWindow : Window {
 
     private void ColorPicker(string name, ref Vector4 prop) {
         var color = prop;
-        if(ImGui.ColorEdit4("Headers", ref color, ImGuiColorEditFlags.NoInputs)) {
+        if(ImGui.ColorEdit4(Loc.T("Headers"), ref color, ImGuiColorEditFlags.NoInputs)) {
             prop = color;
         }
     }
 
     private void DrawPlayerLinkSettings() {
         bool playerLinking = _plugin.Configuration.EnablePlayerLinking;
-        if(ImGui.Checkbox("Enable player linking", ref playerLinking)) {
+        if(ImGui.Checkbox(Loc.T("Enable player linking"), ref playerLinking)) {
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.EnablePlayerLinking = playerLinking;
                 _plugin.Configuration.Save();
@@ -401,9 +410,9 @@ internal class ConfigWindow : Window {
                 _ = _plugin.WindowManager.RefreshAll(true);
             });
         }
-        ImGuiHelper.HelpMarker("Enable combining of player stats with different aliases linked with the same unique character or player.");
+        ImGuiHelper.HelpMarker(Loc.T("Enable combining of player stats with different aliases linked with the same unique character or player."));
         bool autoLinking = _plugin.Configuration.EnableAutoPlayerLinking;
-        if(ImGui.Checkbox("Enable auto linking (requires PlayerTrack)", ref autoLinking)) {
+        if(ImGui.Checkbox(Loc.T("Enable auto linking (requires PlayerTrack)"), ref autoLinking)) {
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.EnableAutoPlayerLinking = autoLinking;
                 _plugin.Configuration.Save();
@@ -411,10 +420,9 @@ internal class ConfigWindow : Window {
                 _ = _plugin.WindowManager.RefreshAll(true);
             });
         }
-        ImGuiHelper.HelpMarker("Use name change data from PlayerTrack to create player links.\n\n" +
-            "Does not work on your own character (for now).");
+        ImGuiHelper.HelpMarker(Loc.T("Use name change data from PlayerTrack to create player links.\n\nDoes not work on your own character (for now)."));
         bool manualLinking = _plugin.Configuration.EnableManualPlayerLinking;
-        if(ImGui.Checkbox("Enable manual linking", ref manualLinking)) {
+        if(ImGui.Checkbox(Loc.T("Enable manual linking"), ref manualLinking)) {
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.EnableManualPlayerLinking = manualLinking;
                 _plugin.Configuration.Save();
@@ -422,16 +430,15 @@ internal class ConfigWindow : Window {
                 _ = _plugin.WindowManager.RefreshAll(true);
             });
         }
-        ImGuiHelper.HelpMarker("Use the manual tab to create player links by hand or to track" +
-            " un-covered auto link scenarios such as personal character alias changes, track known alt characters or to override mistakes.\n\nEnter format as <player name> <home world>");
+        ImGuiHelper.HelpMarker(Loc.T("Use the manual tab to create player links by hand or to track un-covered auto link scenarios such as personal character alias changes, track known alt characters or to override mistakes.\n\nEnter format as <player name> <home world>"));
         using(var tabBar = ImRaii.TabBar("LinksTabBar")) {
-            using(var tab = ImRaii.TabItem("Auto")) {
+            using(var tab = ImRaii.TabItem(Loc.T("Auto"))) {
                 if(tab) {
                     using var disabledButton = ImRaii.Disabled();
                     if(!_ipcUpdateInProgress) {
                         disabledButton.Dispose();
                     }
-                    if(ImGui.Button("Update Now")) {
+                    if(ImGui.Button(Loc.T("Update Now"))) {
                         Task.Run(async () => {
                             _ipcUpdateInProgress = true;
                             await _plugin.PlayerLinksService.BuildAutoLinksCache();
@@ -445,7 +452,7 @@ internal class ConfigWindow : Window {
                     DrawAutoPlayerLinkSettings();
                 }
             }
-            using(var tab = ImRaii.TabItem("Manual")) {
+            using(var tab = ImRaii.TabItem(Loc.T("Manual"))) {
                 if(tab) {
                     DrawManualPlayerLinkSettings();
                 }
@@ -454,7 +461,7 @@ internal class ConfigWindow : Window {
     }
 
     private void DrawAutoPlayerLinkSettings() {
-        ImGui.Text("Players with auto-linked aliases: ");
+        ImGui.Text(Loc.T("Players with auto-linked aliases: "));
 
         using(var child = ImRaii.Child("AutoPlayerLinks", ImGui.GetContentRegionAvail(), true)) {
             if(child) {
@@ -486,7 +493,7 @@ internal class ConfigWindow : Window {
                 }
             }
         }
-        if(ImGui.Button("Save")) {
+        if(ImGui.Button(Loc.T("Save"))) {
             _plugin.DataQueue.QueueDataOperation(async () => {
                 //_plugin.Storage.SetManualLinks(ManualLinks, false);
 
@@ -505,13 +512,13 @@ internal class ConfigWindow : Window {
         }
         if(_saveOpacity > 0f) {
             ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1f, 1f, 1f, _saveOpacity), "Saved!");
+            ImGui.TextColored(new Vector4(1f, 1f, 1f, _saveOpacity), Loc.T("Saved!"));
             _saveOpacity -= 0.002f;
         }
 
         ImGui.SameLine();
         ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - 60f * ImGuiHelpers.GlobalScale);
-        if(ImGui.Button("Cancel")) {
+        if(ImGui.Button(Loc.T("Cancel"))) {
             _plugin.DataQueue.QueueDataOperation(async () => {
                 await Refresh();
             });
@@ -549,7 +556,7 @@ internal class ConfigWindow : Window {
 
         ImGui.TableNextColumn();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if(ImGui.InputTextWithHint($"###{playerLink.GetHashCode()}--CurrentAlias", "Enter main player", ref inputText1, 60)) {
+        if(ImGui.InputTextWithHint($"###{playerLink.GetHashCode()}--CurrentAlias", Loc.T("Enter main player"), ref inputText1, 60)) {
             try {
                 playerLink.CurrentAlias = (PlayerAlias)inputText1;
             } catch {
@@ -566,7 +573,7 @@ internal class ConfigWindow : Window {
 
         ImGui.TableNextColumn();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if(ImGui.InputTextWithHint($"###{playerLink.GetHashCode()}--LinkedAlias", "Enter linked player", ref inputText2, 60)) {
+        if(ImGui.InputTextWithHint($"###{playerLink.GetHashCode()}--LinkedAlias", Loc.T("Enter linked player"), ref inputText2, 60)) {
             try {
                 if(playerLink.LinkedAliases.Count <= 0) {
                     playerLink.LinkedAliases.Add((PlayerAlias)inputText2);
@@ -592,15 +599,15 @@ internal class ConfigWindow : Window {
 
             }
         }
-        ImGuiHelper.WrappedTooltip(isNew ? "Add Link" : "Remove");
+        ImGuiHelper.WrappedTooltip(isNew ? Loc.T("Add Link") : Loc.T("Remove"));
     }
 
     private void DrawPerformanceSettings() {
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Match Caching");
-        ImGuiHelper.HelpMarker("Enabling these options will cache your entire match history in memory. Can help with refresh performance at the cost of increased memory usage.", true);
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Match Caching"));
+        ImGuiHelper.HelpMarker(Loc.T("Enabling these options will cache your entire match history in memory. Can help with refresh performance at the cost of increased memory usage."), true);
 
         bool enableCachingCC = _plugin.Configuration.EnableDBCachingCC ?? true;
-        if(ImGui.Checkbox("Crystalline Conflict", ref enableCachingCC)) {
+        if(ImGui.Checkbox(Loc.T("Crystalline Conflict"), ref enableCachingCC)) {
             _plugin.Configuration.EnableDBCachingCC = enableCachingCC;
             _plugin.DataQueue.QueueDataOperation(() => {
                 if(enableCachingCC) {
@@ -612,7 +619,7 @@ internal class ConfigWindow : Window {
             });
         }
         bool enableCachingFL = _plugin.Configuration.EnableDBCachingFL ?? true;
-        if(ImGui.Checkbox("Frontline", ref enableCachingFL)) {
+        if(ImGui.Checkbox(Loc.T("Frontline"), ref enableCachingFL)) {
             _plugin.Configuration.EnableDBCachingFL = enableCachingFL;
             _plugin.DataQueue.QueueDataOperation(() => {
                 if(enableCachingFL) {
@@ -624,7 +631,7 @@ internal class ConfigWindow : Window {
             });
         }
         bool enableCachingRW = _plugin.Configuration.EnableDBCachingRW ?? true;
-        if(ImGui.Checkbox("Rival Wings", ref enableCachingRW)) {
+        if(ImGui.Checkbox(Loc.T("Rival Wings"), ref enableCachingRW)) {
             _plugin.Configuration.EnableDBCachingRW = enableCachingRW;
             _plugin.DataQueue.QueueDataOperation(() => {
                 if(enableCachingRW) {
@@ -637,32 +644,32 @@ internal class ConfigWindow : Window {
         }
 
         ImGui.Separator();
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Enhanced Tracking Features");
-        ImGuiHelper.HelpMarker("Disabling these features can help save disk space.");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Enhanced Tracking Features"));
+        ImGuiHelper.HelpMarker(Loc.T("Disabling these features can help save disk space."));
 
         bool enableTimelineCC = _plugin.Configuration.EnableTimelineCC ?? true;
-        if(ImGui.Checkbox("Crystalline Conflict Timeline Tracking", ref enableTimelineCC)) {
+        if(ImGui.Checkbox(Loc.T("Crystalline Conflict Timeline Tracking"), ref enableTimelineCC)) {
             _plugin.Configuration.EnableTimelineCC = enableTimelineCC;
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.Save();
             });
         }
         bool enableActionAnalyticsCC = _plugin.Configuration.EnableActionAnalyticsCC ?? true;
-        if(ImGui.Checkbox("Crystalline Conflict Action Tracking", ref enableActionAnalyticsCC)) {
+        if(ImGui.Checkbox(Loc.T("Crystalline Conflict Action Tracking"), ref enableActionAnalyticsCC)) {
             _plugin.Configuration.EnableActionAnalyticsCC = enableActionAnalyticsCC;
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.Save();
             });
         }
         bool enableTimelineFL = _plugin.Configuration.EnableTimelineFL ?? true;
-        if(ImGui.Checkbox("Frontline Timeline Tracking", ref enableTimelineFL)) {
+        if(ImGui.Checkbox(Loc.T("Frontline Timeline Tracking"), ref enableTimelineFL)) {
             _plugin.Configuration.EnableTimelineFL = enableTimelineFL;
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.Save();
             });
         }
         bool enableTimelineRW = _plugin.Configuration.EnableTimelineRW ?? true;
-        if(ImGui.Checkbox("Rival Wings Timeline Tracking", ref enableTimelineRW)) {
+        if(ImGui.Checkbox(Loc.T("Rival Wings Timeline Tracking"), ref enableTimelineRW)) {
             _plugin.Configuration.EnableTimelineRW = enableTimelineRW;
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.Save();
@@ -672,14 +679,12 @@ internal class ConfigWindow : Window {
 
     private void DrawMiscSettings() {
         bool disableMatchGuardRW = _plugin.Configuration.DisableMatchGuardsRW ?? false;
-        if(ImGui.Checkbox("Disable Rival Wings match guards", ref disableMatchGuardRW)) {
+        if(ImGui.Checkbox(Loc.T("Disable Rival Wings match guards"), ref disableMatchGuardRW)) {
             _plugin.Configuration.DisableMatchGuardsRW = disableMatchGuardRW;
             _plugin.DataQueue.QueueDataOperation(() => {
                 _plugin.Configuration.Save();
             });
         }
-        ImGuiHelper.HelpMarker("Unlike Crystalline Conflict and Frontline, the Rival Wings scoreboard is not typically received by the game client until ~9 seconds after the match has ended." +
-            " To prevent players from prematurely leaving the duty and missing the scoreboard, the leave duty button is disabled during this brief window.\n\nYou may disable this feature here but be warned: " +
-            "Matches will not be recorded if the scoreboard payload is not received!", true);
+        ImGuiHelper.HelpMarker(Loc.T("Unlike Crystalline Conflict and Frontline, the Rival Wings scoreboard is not typically received by the game client until ~9 seconds after the match has ended. To prevent players from prematurely leaving the duty and missing the scoreboard, the leave duty button is disabled during this brief window.\n\nYou may disable this feature here but be warned: Matches will not be recorded if the scoreboard payload is not received!"), true);
     }
 }

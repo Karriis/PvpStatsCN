@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ public enum MatchResult {
 }
 
 public class ResultFilter : DataFilter {
-    public override string Name => "Result";
+    public override string Name => Loc.T("Result");
     public MatchResult Result { get; set; }
     private List<string> _resultCombo = new();
 

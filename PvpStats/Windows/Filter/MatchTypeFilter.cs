@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Types.Match;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace PvpStats.Windows.Filter;
 public class MatchTypeFilter : DataFilter {
 
-    public override string Name => "Queue";
+    public override string Name => Loc.T("Queue");
     internal bool AllSelected { get; set; }
     public Dictionary<CrystallineConflictMatchType, bool> FilterState { get; set; } = new();
 
@@ -40,7 +40,7 @@ public class MatchTypeFilter : DataFilter {
 
     internal override void Draw() {
         bool allSelected = AllSelected;
-        if(ImGui.Checkbox($"Select All##{GetHashCode()}", ref allSelected)) {
+        if(ImGui.Checkbox($"{Loc.T("Select All")}##{GetHashCode()}", ref allSelected)) {
             Task.Run(async () => {
                 foreach(var category in FilterState) {
                     FilterState[category.Key] = allSelected;
@@ -66,7 +66,7 @@ public class MatchTypeFilter : DataFilter {
             foreach(var category in FilterState) {
                 ImGui.TableNextColumn();
                 bool filterState = category.Value;
-                if(ImGui.Checkbox($"{category.Key}##{GetHashCode()}", ref filterState)) {
+                if(ImGui.Checkbox($"{Loc.T(category.Key.ToString())}##{GetHashCode()}", ref filterState)) {
                     //if(CurrentRefresh is null || CurrentRefresh.Result.IsCompleted) {
                     //    CurrentRefresh = Task.Run(async () => {
                     //        FilterState[category.Key] = filterState;

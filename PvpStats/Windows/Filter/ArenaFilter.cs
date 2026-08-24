@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using PvpStats.Helpers;
 using PvpStats.Types.Match;
 using System;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace PvpStats.Windows.Filter;
 public class ArenaFilter : DataFilter {
-    public override string Name => "Arena";
+    public override string Name => Loc.T("Arena");
     [JsonIgnore]
     public bool AllSelected { get; set; }
     public Dictionary<CrystallineConflictMap, bool> FilterState { get; set; } = new();

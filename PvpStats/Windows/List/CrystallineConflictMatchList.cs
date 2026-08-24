@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using PvpStats.Helpers;
@@ -13,14 +13,14 @@ internal class CrystallineConflictMatchList : MatchList<CrystallineConflictMatch
     public override string Name => "CC Matches";
 
     protected override List<ColumnParams> Columns { get; set; } = new() {
-        new ColumnParams{Name = "Start Time", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
-        new ColumnParams{Name = "Arena", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 145f },
-        new ColumnParams{Name = "Job", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
-        new ColumnParams{Name = "Queue", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 50f },
-        new ColumnParams{Name = "Duration", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
-        new ColumnParams{Name = "Result", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
+        new ColumnParams{Name = Loc.T("Start Time"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
+        new ColumnParams{Name = Loc.T("Arena"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 145f },
+        new ColumnParams{Name = Loc.T("Job"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
+        new ColumnParams{Name = Loc.T("Queue"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 50f },
+        new ColumnParams{Name = Loc.T("Duration"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
+        new ColumnParams{Name = Loc.T("Result"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
         new ColumnParams{Name = "RankAfter", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f, Priority = 3 },
-        new ColumnParams{Name = "Tags", Flags = ImGuiTableColumnFlags.WidthStretch, Width = 80f, Priority = 4 },
+        new ColumnParams{Name = Loc.T("Tags"), Flags = ImGuiTableColumnFlags.WidthStretch, Width = 80f, Priority = 4 },
     };
 
     public CrystallineConflictMatchList(Plugin plugin) : base(plugin, plugin.CCCache, plugin.CCStatsEngine.RefreshLock) {
@@ -43,7 +43,7 @@ internal class CrystallineConflictMatchList : MatchList<CrystallineConflictMatch
             ImGui.TextColored(_plugin.Configuration.GetJobColor(localPlayerJob), localPlayerJob.ToString());
         }
         ImGui.TableNextColumn();
-        ImGui.Text($"{item.MatchType}");
+        ImGui.Text(Loc.T(item.MatchType.ToString()));
         ImGui.TableNextColumn();
         var timeSpanString = ImGuiHelper.GetTimeSpanString(item.MatchDuration ?? TimeSpan.Zero);
         ImGuiHelper.DrawNumericCell(timeSpanString, -10f);
@@ -55,11 +55,11 @@ internal class CrystallineConflictMatchList : MatchList<CrystallineConflictMatch
         string resultText;
         if(isSpectated) {
             color = ImGuiColors.DalamudWhite;
-            resultText = "N/A";
+            resultText = Loc.T("N/A");
         } else {
             color = isWin ? _plugin.Configuration.Colors.Win : _plugin.Configuration.Colors.Loss;
             color = noWinner ? _plugin.Configuration.Colors.Other : color;
-            resultText = isWin ? "WIN" : "LOSS";
+            resultText = isWin ? Loc.T("WIN") : Loc.T("LOSS");
             resultText = noWinner ? "???" : resultText;
         }
         ImGuiHelper.CenterAlignCursor(resultText);
@@ -82,7 +82,7 @@ internal class CrystallineConflictMatchList : MatchList<CrystallineConflictMatch
         csv += (!match.IsSpectated ? match.LocalPlayerTeamMember!.Job : "") + ",";
         csv += match.MatchType + ",";
         csv += match.MatchDuration + ",";
-        csv += (match.IsWin ? "WIN" : match.MatchWinner != null ? "LOSS" : "???") + ",";
+        csv += (match.IsWin ? Loc.T("WIN") : match.MatchWinner != null ? Loc.T("LOSS") : "???") + ",";
         csv += (match.MatchType == CrystallineConflictMatchType.Ranked && match.PostMatch != null ? match.PostMatch.RankAfter?.ToString() : "") + ",";
         csv += "\n";
         return csv;

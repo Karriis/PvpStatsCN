@@ -19,7 +19,7 @@ internal class CCTrackerWindow : TrackerWindow<CrystallineConflictMatch> {
     private readonly CrystallineConflictPvPProfile _profile;
     private readonly CrystallineConflictRankGraph _credit;
 
-    internal CCTrackerWindow(Plugin plugin) : base(plugin, plugin.CCStatsEngine, plugin.Configuration.CCWindowConfig, "Crystalline Conflict Tracker") {
+    internal CCTrackerWindow(Plugin plugin) : base(plugin, plugin.CCStatsEngine, plugin.Configuration.CCWindowConfig, Loc.T("Crystalline Conflict Tracker")) {
         //SizeConstraints = new WindowSizeConstraints {
         //    MinimumSize = new Vector2(425, 400),
         //    MaximumSize = new Vector2(5000, 5000)
@@ -74,25 +74,25 @@ internal class CCTrackerWindow : TrackerWindow<CrystallineConflictMatch> {
                 if(Plugin.Configuration.ResizeWindowLeft) {
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 20f * ImGuiHelpers.GlobalScale);
                 }
-                Tab("Matches", _matches.Draw, _matches.RefreshActive, 0f);
-                Tab("Summary", () => {
+                Tab(Loc.T("Matches"), _matches.Draw, _matches.RefreshActive, 0f);
+                Tab(Loc.T("Summary"), () => {
                     using(ImRaii.Child("SummaryChild")) {
                         _summary.Draw();
                     }
                 }, _summary.RefreshActive, _summary.RefreshProgress);
-                Tab("Records", () => {
+                Tab(Loc.T("Records"), () => {
                     using(ImRaii.Child("RecordsChild")) {
                         _records.Draw();
                     }
                 }, _records.RefreshActive, _records.RefreshProgress);
-                Tab("Jobs", _jobs.Draw, _jobs.RefreshActive, _jobs.RefreshProgress);
-                Tab("Players", _players.Draw, _players.RefreshActive, _players.RefreshProgress);
-                Tab("Credit", () => {
+                Tab(Loc.T("Jobs"), _jobs.Draw, _jobs.RefreshActive, _jobs.RefreshProgress);
+                Tab(Loc.T("Players"), _players.Draw, _players.RefreshActive, _players.RefreshProgress);
+                Tab(Loc.T("Credit"), () => {
                     using(ImRaii.Child("CreditChild")) {
                         _credit.Draw();
                     }
                 }, _credit.RefreshActive, _credit.RefreshProgress);
-                Tab("Profile", () => {
+                Tab(Loc.T("Profile"), () => {
                     using(ImRaii.Child("ProfileChild")) {
                         _profile.Draw();
                     }

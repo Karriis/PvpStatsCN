@@ -12,6 +12,7 @@ using PvpStats.Types.Match;
 using PvpStats.Utility;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -19,9 +20,10 @@ using System.Threading.Tasks;
 namespace PvpStats;
 
 public sealed class Plugin : IDalamudPlugin {
-    public string Name => "PvpStats";
+    public string Name => "PvpStatsCN";
 
     internal const string DatabaseName = "data.db";
+    private const string LegacyInternalName = "PvpStats";
 
     private const string SplashCommandName = "/pvpstats";
     private const string CCStatsCommandName = "/ccstats";
@@ -114,6 +116,7 @@ public sealed class Plugin : IDalamudPlugin {
             InteropProvider = interopProvider;
             SigScanner = sigScanner;
 
+            MigrateLegacyFiles(PluginInterface, Log);
             try {
                 Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             } catch(Exception e) {
@@ -121,6 +124,8 @@ public sealed class Plugin : IDalamudPlugin {
                 Log.Error(e, "Error in configuration setup.");
             }
             Configuration.Initialize(this);
+
+            UiLocalization.Initialize(this);
 
             DataQueue = new();
             Storage = new(this, $"{PluginInterface.GetPluginConfigDirectory()}\\{DatabaseName}");
@@ -154,27 +159,27 @@ public sealed class Plugin : IDalamudPlugin {
             }
 
             CommandManager.AddHandler(SplashCommandName, new CommandInfo(OnSplashCommand) {
-                HelpMessage = "Opens launcher window."
+                HelpMessage = Loc.T("Opens launcher window.")
             });
             CommandManager.AddHandler(CCStatsCommandName, new CommandInfo(OnCCCommand) {
-                HelpMessage = "Opens Crystalline Conflict tracker."
+                HelpMessage = Loc.T("Opens Crystalline Conflict tracker.")
             });
             CommandManager.AddHandler(FLStatsCommandName, new CommandInfo(OnFLCommand) {
-                HelpMessage = "Opens Frontline tracker."
+                HelpMessage = Loc.T("Opens Frontline tracker.")
             });
             CommandManager.AddHandler(RWStatsCommandName, new CommandInfo(OnRWCommand) {
-                HelpMessage = "Opens Rival Wings tracker."
+                HelpMessage = Loc.T("Opens Rival Wings tracker.")
             });
             CommandManager.AddHandler(ConfigCommandName, new CommandInfo(OnConfigCommand) {
-                HelpMessage = "Opens config window."
+                HelpMessage = Loc.T("Opens config window.")
             });
             CommandManager.AddHandler(LastMatchCommandName, new CommandInfo(OnLastMatchCommand) {
-                HelpMessage = "Opens match details window of last played match."
+                HelpMessage = Loc.T("Opens match details window of last played match.")
             });
 
 #if DEBUG
             CommandManager.AddHandler(DebugCommandName, new CommandInfo(OnDebugCommand) {
-                HelpMessage = "Opens debug window."
+                HelpMessage = Loc.T("Opens debug window.")
             });
 #endif
             DataQueue.QueueDataOperation(Initialize);
@@ -188,14 +193,52 @@ public sealed class Plugin : IDalamudPlugin {
 
     }
 
+    private static void MigrateLegacyFiles(IDalamudPluginInterface pluginInterface, IPluginLog log) {
+        try {
+            var targetDataDirectory = pluginInterface.GetPluginConfigDirectory();
+            var configRoot = Directory.GetParent(targetDataDirectory)?.FullName;
+            if(string.IsNullOrWhiteSpace(configRoot)) {
+                return;
+            }
+
+            Directory.CreateDirectory(targetDataDirectory);
+            var targetInternalName = Path.GetFileName(targetDataDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            CopyLegacyFile(
+                Path.Combine(configRoot, LegacyInternalName, DatabaseName),
+                Path.Combine(targetDataDirectory, DatabaseName),
+                log);
+            CopyLegacyFile(
+                Path.Combine(configRoot, $"{LegacyInternalName}.json"),
+                Path.Combine(configRoot, $"{targetInternalName}.json"),
+                log);
+        } catch(Exception e) {
+            log.Warning(e, "Failed to migrate legacy PvpStats files. The plugin will continue with a new data directory.");
+        }
+    }
+
+    private static void CopyLegacyFile(string source, string destination, IPluginLog log) {
+        if(!File.Exists(source) || File.Exists(destination)) {
+            return;
+        }
+
+        File.Copy(source, destination, false);
+        log.Information($"Migrated legacy PvpStats file to {destination}");
+    }
+
     public void Dispose() {
 #if DEBUG
         Log.Debug("disposing plugin");
 #endif
 
-        CommandManager.RemoveHandler(CCStatsCommandName);
-        CommandManager.RemoveHandler(FLStatsCommandName);
-        CommandManager.RemoveHandler(ConfigCommandName);
+        CommandManager?.RemoveHandler(SplashCommandName);
+        CommandManager?.RemoveHandler(CCStatsCommandName);
+        CommandManager?.RemoveHandler(FLStatsCommandName);
+        CommandManager?.RemoveHandler(RWStatsCommandName);
+        CommandManager?.RemoveHandler(ConfigCommandName);
+        CommandManager?.RemoveHandler(LastMatchCommandName);
+#if DEBUG
+        CommandManager?.RemoveHandler(DebugCommandName);
+#endif
 
         Functions?.Dispose();
         CCMatchManager?.Dispose();

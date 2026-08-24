@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace PvpStats.Windows.Filter;
 
 public class DurationFilter : DataFilter {
-    public override string Name => "Duration";
+    public override string Name => Loc.T("Duration");
     public int DirectionIndex { get; set; } = 0;
     public TimeSpan Duration { get; set; } = TimeSpan.Zero;
     private readonly List<string> _combo = ["≥", "＜"];
@@ -65,6 +65,6 @@ public class DurationFilter : DataFilter {
                 });
             }
         }
-        ImGuiHelper.WrappedTooltip("Reset");
+        ImGuiHelper.WrappedTooltip(Loc.T("Reset"));
     }
 }

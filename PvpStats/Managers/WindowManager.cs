@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Interface.GameFonts;
 using Dalamud.Interface.ManagedFontAtlas;
@@ -39,7 +39,7 @@ internal class WindowManager : IDisposable {
 
     internal WindowManager(Plugin plugin) {
         _plugin = plugin;
-        WindowSystem = new("PvP Stats");
+        WindowSystem = new(Loc.T("PvP Stats"));
 
         CCTrackerWindow = new(plugin);
         FLTrackerWindow = new(plugin);
@@ -71,6 +71,7 @@ internal class WindowManager : IDisposable {
         WindowSystem.RemoveAllWindows();
         _plugin.PluginInterface.UiBuilder.Draw -= DrawUI;
         _plugin.PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigWindow;
+        _plugin.PluginInterface.UiBuilder.OpenMainUi -= OpenSplashWindow;
 
         _plugin.ClientState.Login -= OnLogin;
     }
@@ -138,7 +139,7 @@ internal class WindowManager : IDisposable {
     //}
 
     internal void OpenMatchDetailsWindow(PvpMatch match) {
-        var windowName = $"Match Details: {match.Id}";
+        var windowName = Loc.T("Match Details: {0}", match.Id);
         var window = WindowSystem.Windows.Where(w => w.WindowName == windowName).FirstOrDefault();
         if(window is not null) {
             window.BringToFront();
@@ -166,14 +167,14 @@ internal class WindowManager : IDisposable {
     }
 
     internal void CloseAllMatchWindows() {
-        var windows = WindowSystem.Windows.Where(w => w.WindowName.StartsWith("Match Details: ", StringComparison.OrdinalIgnoreCase));
+        var windows = WindowSystem.Windows.Where(w => w.WindowName.StartsWith(Loc.T("Match Details: "), StringComparison.OrdinalIgnoreCase));
         foreach(var window in windows) {
             window.IsOpen = false;
         }
     }
 
     internal void OpenFullEditWindow<T>(T match) where T : PvpMatch {
-        var windowName = $"Full Edit: {match.GetHashCode()}";
+        var windowName = Loc.T("Full Edit: {0}", match.GetHashCode());
         var window = WindowSystem.Windows.Where(w => w.WindowName == windowName).FirstOrDefault();
         if(window is not null) {
             window.BringToFront();
@@ -202,7 +203,7 @@ internal class WindowManager : IDisposable {
     }
 
     internal void OpenTimelineFullEditWindow<T>(T timeline) where T : PvpMatchTimeline {
-        var windowName = $"Timeline Full Edit: {timeline.Id}";
+        var windowName = Loc.T("Timeline Full Edit: {0}", timeline.Id);
         var window = WindowSystem.Windows.Where(w => w.WindowName == windowName).FirstOrDefault();
         if(window is not null) {
             window.BringToFront();
@@ -216,7 +217,7 @@ internal class WindowManager : IDisposable {
     }
 
     internal void OpenTimelineFullEditWindow(PvpMatchTimeline timeline) {
-        var windowName = $"Timeline Full Edit: {timeline.Id}";
+        var windowName = Loc.T("Timeline Full Edit: {0}", timeline.Id);
         var window = WindowSystem.Windows.Where(w => w.WindowName == windowName).FirstOrDefault();
         if(window is not null) {
             window.BringToFront();
@@ -251,7 +252,7 @@ internal class WindowManager : IDisposable {
                 if(!opened) {
                     ImGui.SetKeyboardFocusHere(0);
                 }
-                if(ImGui.InputTextWithHint("##TagsInput", "Enter tags...", ref tagsText, 500, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                if(ImGui.InputTextWithHint("##TagsInput", Loc.T("Enter tags..."), ref tagsText, 500, ImGuiInputTextFlags.EnterReturnsTrue)) {
                     match.Tags = tagsText;
                     ImGui.CloseCurrentPopup();
                     _plugin.DataQueue.QueueDataOperation(async () => {

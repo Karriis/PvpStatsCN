@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Types;
@@ -30,11 +30,11 @@ public enum TimeRelation {
 }
 
 public class TimeFilter : DataFilter {
-    public override string Name => "Time";
+    public override string Name => Loc.T("Time");
 
     public TimeRange StatRange { get; set; } = TimeRange.All;
-    public static string[] Range = { "Past 24 hours", "Past 7 days", "This month", "Last month", "This year", "Last year", "All-time", "By ranked season", "By expansion", "By patch", "Custom" };
-    public static string[] RelationRange = { "BEFORE", "SINCE", "DURING", "AFTER" };
+    public static string[] Range => [Loc.T("Past 24 hours"), Loc.T("Past 7 days"), Loc.T("This month"), Loc.T("Last month"), Loc.T("This year"), Loc.T("Last year"), Loc.T("All-time"), Loc.T("By ranked season"), Loc.T("By expansion"), Loc.T("By patch"), Loc.T("Custom")];
+    public static string[] RelationRange => [Loc.T("BEFORE"), Loc.T("SINCE"), Loc.T("DURING"), Loc.T("AFTER")];
 
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
@@ -88,7 +88,7 @@ public class TimeFilter : DataFilter {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.AlignTextToFramePadding();
-                ImGui.Text("Start:");
+                ImGui.Text(Loc.T("Start:"));
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(ImGui.GetColumnWidth());
                 var startTime = StartTime.ToString();
@@ -104,7 +104,7 @@ public class TimeFilter : DataFilter {
                     }
                 }
                 ImGui.TableNextColumn();
-                ImGui.Text("End:");
+                ImGui.Text(Loc.T("End:"));
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
                 var endTime = EndTime.ToString();

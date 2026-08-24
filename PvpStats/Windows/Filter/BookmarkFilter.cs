@@ -1,11 +1,11 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Threading.Tasks;
 
 namespace PvpStats.Windows.Filter;
 
 public class BookmarkFilter : DataFilter {
-    public override string Name => "Favorites Only";
+    public override string Name => Loc.T("Favorites Only");
     public bool BookmarkedOnly { get; set; } = false;
 
     public BookmarkFilter() { }

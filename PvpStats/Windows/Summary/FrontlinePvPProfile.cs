@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -15,13 +15,13 @@ internal class FrontlinePvPProfile {
 
     public unsafe void Draw() {
         var pvpProfile = PvPProfile.Instance();
-        ImGuiHelper.HelpMarker("This data comes from SE's game servers.", false);
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Overall Performance:");
+        ImGuiHelper.HelpMarker(Loc.T("This data comes from SE's game servers."), false);
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Overall Performance:"));
         if(pvpProfile != null) {
             DrawTable(pvpProfile->FrontlineTotalMatches, pvpProfile->FrontlineTotalFirstPlace, pvpProfile->FrontlineTotalSecondPlace, pvpProfile->FrontlineTotalThirdPlace);
         }
         ImGui.Separator();
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, "Weekly Performance:");
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Weekly Performance:"));
         if(pvpProfile != null) {
             DrawTable(pvpProfile->FrontlineWeeklyMatches, pvpProfile->FrontlineWeeklyFirstPlace, pvpProfile->FrontlineWeeklySecondPlace, pvpProfile->FrontlineWeeklyThirdPlace);
         }
@@ -37,13 +37,13 @@ internal class FrontlinePvPProfile {
                 ImGui.TableSetupColumn($"rate", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 45f);
 
                 ImGui.TableNextColumn();
-                ImGui.Text("Matches: ");
+                ImGui.Text(Loc.T("Matches: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{matches:N0}");
                 ImGui.TableNextColumn();
 
                 ImGui.TableNextColumn();
-                ImGui.Text("First places: ");
+                ImGui.Text(Loc.T("First places: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{firstPlace:N0}");
                 ImGui.TableNextColumn();
@@ -52,7 +52,7 @@ internal class FrontlinePvPProfile {
                 }
 
                 ImGui.TableNextColumn();
-                ImGui.Text("Second places: ");
+                ImGui.Text(Loc.T("Second places: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{secondPlace:N0}");
                 ImGui.TableNextColumn();
@@ -61,7 +61,7 @@ internal class FrontlinePvPProfile {
                 }
 
                 ImGui.TableNextColumn();
-                ImGui.Text("Third places: ");
+                ImGui.Text(Loc.T("Third places: "));
                 ImGui.TableNextColumn();
                 ImGui.Text($"{thirdPlace:N0}");
                 ImGui.TableNextColumn();
@@ -73,7 +73,7 @@ internal class FrontlinePvPProfile {
                 ImGui.TableNextColumn();
                 ImGui.TableNextColumn();
                 ImGui.TableNextColumn();
-                ImGui.Text("Average place: ");
+                ImGui.Text(Loc.T("Average place: "));
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawColorScale((float)averagePlace, _plugin.Configuration.Colors.StatHigh, _plugin.Configuration.Colors.StatLow, 1.5f, 2.5f, _plugin.Configuration.ColorScaleStats, averagePlace.ToString("0.00"));
             }

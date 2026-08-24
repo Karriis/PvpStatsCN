@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using PvpStats.Helpers;
 using PvpStats.Types.Match;
@@ -13,13 +13,13 @@ internal class RivalWingsMatchList : MatchList<RivalWingsMatch> {
     public override string Name => "RW Matches";
 
     protected override List<ColumnParams> Columns { get; set; } = new() {
-        new ColumnParams{Name = "Start Time", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
-        new ColumnParams{Name = "Arena", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 140f },
-        new ColumnParams{Name = "Job", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
-        new ColumnParams{Name = "Team", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 55f },
-        new ColumnParams{Name = "Duration", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
-        new ColumnParams{Name = "Result", Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
-        new ColumnParams{Name = "Tags", Flags = ImGuiTableColumnFlags.WidthStretch, Width = 80f, Priority = 3 },
+        new ColumnParams{Name = Loc.T("Start Time"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 125f },
+        new ColumnParams{Name = Loc.T("Arena"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 140f },
+        new ColumnParams{Name = Loc.T("Job"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 1 },
+        new ColumnParams{Name = Loc.T("Team"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 55f },
+        new ColumnParams{Name = Loc.T("Duration"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f, Priority = 2 },
+        new ColumnParams{Name = Loc.T("Result"), Flags = ImGuiTableColumnFlags.WidthFixed, Width = 40f },
+        new ColumnParams{Name = Loc.T("Tags"), Flags = ImGuiTableColumnFlags.WidthStretch, Width = 80f, Priority = 3 },
     };
 
     public RivalWingsMatchList(Plugin plugin, SemaphoreSlim? interlock = null) : base(plugin, plugin.RWCache, interlock) {
@@ -53,7 +53,7 @@ internal class RivalWingsMatchList : MatchList<RivalWingsMatch> {
         bool isLoss = item.IsLoss;
 
         var color = isWin ? _plugin.Configuration.Colors.Win : isLoss ? _plugin.Configuration.Colors.Loss : _plugin.Configuration.Colors.Other;
-        string resultText = isWin ? "WIN" : isLoss ? "LOSS" : "???";
+        string resultText = isWin ? Loc.T("WIN") : isLoss ? Loc.T("LOSS") : "???";
         ImGuiHelper.CenterAlignCursor(resultText);
         ImGui.TextColored(color, resultText);
 

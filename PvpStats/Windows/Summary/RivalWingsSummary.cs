@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -190,33 +190,33 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
                 ImGui.TableSetupColumn("c2");
 
                 ImGui.TableNextColumn();
-                ImGui.TextColored(Plugin.Configuration.Colors.Header, "Personal Mech Uptime:");
+                ImGui.TextColored(Plugin.Configuration.Colors.Header, Loc.T("Personal Mech Uptime:"));
                 DrawMechTable();
                 ImGui.TableNextColumn();
-                ImGui.TextColored(Plugin.Configuration.Colors.Header, "Objective Win Rate:");
+                ImGui.TextColored(Plugin.Configuration.Colors.Header, Loc.T("Objective Win Rate:"));
                 DrawMidMercTable();
             }
             if(LocalPlayerJobResults.Count > 0) {
                 ImGui.Separator();
-                ImGui.TextColored(Plugin.Configuration.Colors.Header, "Jobs Played:");
-                ImGuiHelper.HelpMarker("Job is determined by the post-match scoreboard.");
+                ImGui.TextColored(Plugin.Configuration.Colors.Header, Loc.T("Jobs Played:"));
+                ImGuiHelper.HelpMarker(Loc.T("Job is determined by the post-match scoreboard."));
                 DrawJobTable(LocalPlayerJobResults.OrderByDescending(x => x.Value.Matches).ToDictionary(), 0);
             }
             ImGui.Separator();
-            ImGui.TextColored(Plugin.Configuration.Colors.Header, "Average Performance:");
+            ImGui.TextColored(Plugin.Configuration.Colors.Header, Loc.T("Average Performance:"));
             ImGuiHelper.HelpMarker("1st row: average per match.\n2nd row: average per minute.\n3rd row: median team contribution per match.");
-            ImGui.Text("KDA: ");
+            ImGui.Text(Loc.T("KDA: "));
             ImGui.SameLine();
             ImGuiHelper.DrawColorScale((float)LocalPlayerStats.ScoreboardTotal.KDA, Plugin.Configuration.Colors.StatLow, Plugin.Configuration.Colors.StatHigh,
                 RivalWingsStatsManager.KDARange[0], RivalWingsStatsManager.KDARange[1], Plugin.Configuration.ColorScaleStats, LocalPlayerStats.ScoreboardTotal.KDA.ToString("0.00"));
             ImGui.SameLine();
-            ImGui.Text("Kill Participation Rate: ");
+            ImGui.Text(Loc.T("Kill Participation Rate: "));
             ImGui.SameLine();
             ImGuiHelper.DrawColorScale((float)LocalPlayerStats.ScoreboardTotal.KillParticipationRate, Plugin.Configuration.Colors.StatLow, Plugin.Configuration.Colors.StatHigh,
                 RivalWingsStatsManager.KillParticipationRange[0], RivalWingsStatsManager.KillParticipationRange[1], Plugin.Configuration.ColorScaleStats, LocalPlayerStats.ScoreboardTotal.KillParticipationRate.ToString("P1"));
             DrawMatchStatsTable();
         } else {
-            ImGui.TextDisabled("No matches for given filters.");
+            ImGui.TextDisabled(Loc.T("No matches for given filters."));
         }
 
         //if(RefreshActive) {
@@ -233,28 +233,28 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
             ImGui.TableSetupColumn($"rate", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
 
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawNumericCell("Matches: ", -10f);
+            ImGuiHelper.DrawNumericCell(Loc.T("Matches: "), -10f);
             ImGui.TableNextColumn();
             ImGuiHelper.DrawNumericCell($"{OverallResults.Matches:N0}");
             ImGui.TableNextColumn();
 
             if(OverallResults.Matches > 0) {
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawNumericCell("Wins: ", -10f);
+                ImGuiHelper.DrawNumericCell(Loc.T("Wins: "), -10f);
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell($"{OverallResults.Wins:N0}");
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell(OverallResults.WinRate.ToString("P2"));
 
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawNumericCell("Losses: ", -10f);
+                ImGuiHelper.DrawNumericCell(Loc.T("Losses: "), -10f);
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell($"{OverallResults.Losses:N0}");
                 ImGui.TableNextColumn();
 
                 if(OverallResults.OtherResult > 0) {
                     ImGui.TableNextColumn();
-                    ImGuiHelper.DrawNumericCell("Other: ", -10f);
+                    ImGuiHelper.DrawNumericCell(Loc.T("Other: "), -10f);
                     ImGui.TableNextColumn();
                     ImGuiHelper.DrawNumericCell($"{OverallResults.OtherResult:N0}");
                     ImGui.TableNextColumn();
@@ -264,7 +264,7 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
                 ImGui.TableNextRow();
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                ImGuiHelper.DrawNumericCell("Average match length: ", -10f);
+                ImGuiHelper.DrawNumericCell(Loc.T("Average match length: "), -10f);
                 ImGui.TableNextColumn();
                 ImGuiHelper.DrawNumericCell(ImGuiHelper.GetTimeSpanString(AverageMatchDuration));
                 ImGui.TableNextColumn();
@@ -280,22 +280,22 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
             var cellPadding = ImGui.GetStyle().CellPadding.X;
             var stretchWidth = ImGui.GetContentRegionAvail().X - 55f * ImGuiHelpers.GlobalScale * (numColumns - 1) - cellPadding * 2 * numColumns;
             var maxWidth = 250f * ImGuiHelpers.GlobalScale - cellPadding * 2 + (55f * ImGuiHelpers.GlobalScale + cellPadding * 2);
-            ImGui.TableSetupColumn("Job", ImGuiTableColumnFlags.WidthFixed, Math.Min(stretchWidth, maxWidth));
-            ImGui.TableSetupColumn($"Role", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
-            ImGui.TableSetupColumn($"Matches", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
-            ImGui.TableSetupColumn($"Wins", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
-            ImGui.TableSetupColumn($"Win Rate", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
+            ImGui.TableSetupColumn(Loc.T("Job"), ImGuiTableColumnFlags.WidthFixed, Math.Min(stretchWidth, maxWidth));
+            ImGui.TableSetupColumn(Loc.T("Role"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
+            ImGui.TableSetupColumn(Loc.T("Matches"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
+            ImGui.TableSetupColumn(Loc.T("Wins"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
+            ImGui.TableSetupColumn(Loc.T("Win Rate"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 55f);
 
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Job", 0, false, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Job"), 0, false, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Role", 0, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Role"), 0, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Matches", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Matches"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Wins", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Wins"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader(ImGuiHelper.WrappedString("Win Rate", ImGuiHelpers.GlobalScale * 55f), 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(ImGuiHelper.WrappedString(Loc.T("Win Rate"), ImGuiHelpers.GlobalScale * 55f), 2, true, true, offset);
             foreach(var job in jobStats) {
                 ImGui.TableNextColumn();
                 ImGui.Text($"{PlayerJobHelper.GetNameFromJob(job.Key)}");
@@ -338,21 +338,21 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
 
             ImGui.TableNextColumn();
             ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.ChaserIcons[RivalWingsTeamName.Unknown]), size, uv0, uv1);
-            ImGuiHelper.WrappedTooltip("Cruise Chaser");
+            ImGuiHelper.WrappedTooltip(Loc.T("Cruise Chaser"));
             ImGui.TableNextColumn();
             ImGui.AlignTextToFramePadding();
             ImGuiHelper.DrawNumericCell(LocalPlayerMechTime[RivalWingsMech.Chaser].ToString("P2"), -1f);
 
             ImGui.TableNextColumn();
             ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.OppressorIcons[RivalWingsTeamName.Unknown]), size, uv0, uv1);
-            ImGuiHelper.WrappedTooltip("Oppressor");
+            ImGuiHelper.WrappedTooltip(Loc.T("Oppressor"));
             ImGui.TableNextColumn();
             ImGui.AlignTextToFramePadding();
             ImGuiHelper.DrawNumericCell(LocalPlayerMechTime[RivalWingsMech.Oppressor].ToString("P2"), -1f);
 
             ImGui.TableNextColumn();
             ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.JusticeIcons[RivalWingsTeamName.Unknown]), size, uv0, uv1);
-            ImGuiHelper.WrappedTooltip("Brute Justice");
+            ImGuiHelper.WrappedTooltip(Loc.T("Brute Justice"));
             ImGui.TableNextColumn();
             ImGui.AlignTextToFramePadding();
             ImGuiHelper.DrawNumericCell(LocalPlayerMechTime[RivalWingsMech.Justice].ToString("P2"), -1f);
@@ -372,7 +372,7 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
 
             ImGui.TableNextColumn();
             ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.GoblinMercIcons[RivalWingsTeamName.Unknown]), size, uv0, uv1);
-            ImGuiHelper.WrappedTooltip("Mercenaries");
+            ImGuiHelper.WrappedTooltip(Loc.T("Mercenaries"));
             ImGui.TableNextColumn();
             ImGui.AlignTextToFramePadding();
             ImGuiHelper.DrawNumericCell(LocalPlayerMercWinRate.ToString("P2"), -1f);
@@ -381,7 +381,7 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
             uv0 = new Vector2(0.1f);
             uv1 = new Vector2(0.9f);
             ImGui.Image(Plugin.WindowManager.GetTextureHandle(TextureHelper.TrainIcon), size, uv0, uv1);
-            ImGuiHelper.WrappedTooltip("Supplies");
+            ImGuiHelper.WrappedTooltip(Loc.T("Supplies"));
             ImGui.TableNextColumn();
             ImGui.AlignTextToFramePadding();
             ImGuiHelper.DrawNumericCell(LocalPlayerMidWinRate.ToString("P2"), -1f);
@@ -389,7 +389,7 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
     }
 
     private void DrawMatchStatsTable() {
-        string[] cols = ["Kills", "Deaths", "Assists", "Damage to PCs", "Damage to Other", "Damage Taken", "HP Restored", "Ceruleum"];
+        string[] cols = [Loc.T("Kills"), Loc.T("Deaths"), Loc.T("Assists"), Loc.T("Damage to PCs"), Loc.T("Damage to Other"), Loc.T("Damage Taken"), Loc.T("HP Restored"), Loc.T("Ceruleum")];
         using var table = ImRaii.Table($"MatchStatsTable", cols.Length, ImGuiTableFlags.PadOuterX | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.NoClip | ImGuiTableFlags.NoSavedSettings);
         if(table) {
             float offset = -1f;
@@ -407,21 +407,21 @@ internal class RivalWingsSummary : RefreshableSync<RivalWingsMatch> {
             }
 
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Kills", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Kills"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Deaths", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Deaths"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Assists", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Assists"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Damage\nto PCs", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto PCs"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Damage\nto Other", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto Other"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Damage\nTaken", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nTaken"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("HP\nRestored", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("HP\nRestored"), 2, true, true, offset);
             ImGui.TableNextColumn();
-            ImGuiHelper.DrawTableHeader("Ceru-\nleum", 2, true, true, offset);
+            ImGuiHelper.DrawTableHeader(Loc.T("Ceru-\nleum"), 2, true, true, offset);
 
             //per match
             ImGui.TableNextColumn();

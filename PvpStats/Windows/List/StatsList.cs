@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Helpers;
@@ -162,7 +162,7 @@ internal abstract class StatsList<T, U, V> : FilteredList<T, V> where T : notnul
                 });
             }
         }
-        ImGuiHelper.WrappedTooltip("Copy CSV to clipboard");
+        ImGuiHelper.WrappedTooltip(Loc.T("Copy CSV to clipboard"));
     }
 
     protected override void PostColumnSetup() {

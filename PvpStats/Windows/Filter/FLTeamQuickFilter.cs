@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Helpers;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace PvpStats.Windows.Filter;
 internal class FLTeamQuickFilter : DataFilter {
 
-    public override string Name => "Team";
+    public override string Name => Loc.T("Team");
     internal bool AllSelected { get; set; }
     public Dictionary<FrontlineTeamName, bool> FilterState { get; set; } = new();
 

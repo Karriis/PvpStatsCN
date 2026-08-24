@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Helpers;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace PvpStats.Windows.Filter;
 public class FLResultFilter : DataFilter {
 
-    public override string Name => "Result";
+    public override string Name => Loc.T("Result");
     internal bool AllSelected { get; set; }
     public Dictionary<int, bool> FilterState { get; set; } = new();
 
@@ -39,7 +39,7 @@ public class FLResultFilter : DataFilter {
 
     internal override void Draw() {
         bool allSelected = AllSelected;
-        if(ImGui.Checkbox($"Select All##{GetHashCode()}", ref allSelected)) {
+        if(ImGui.Checkbox($"{Loc.T("Select All")}##{GetHashCode()}", ref allSelected)) {
             Task.Run(async () => {
                 foreach(var category in FilterState) {
                     FilterState[category.Key] = allSelected;

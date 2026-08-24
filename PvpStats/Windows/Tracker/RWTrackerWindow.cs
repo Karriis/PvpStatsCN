@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using PvpStats.Types.Match;
@@ -18,7 +18,7 @@ internal class RWTrackerWindow : TrackerWindow<RivalWingsMatch> {
     private readonly RivalWingsPlayerList _players;
     private readonly RivalWingsPvPProfile _profile;
 
-    public RWTrackerWindow(Plugin plugin) : base(plugin, plugin.RWStatsEngine, plugin.Configuration.RWWindowConfig, "Rival Wings Tracker") {
+    public RWTrackerWindow(Plugin plugin) : base(plugin, plugin.RWStatsEngine, plugin.Configuration.RWWindowConfig, Loc.T("Rival Wings Tracker")) {
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(435, 400),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
@@ -62,22 +62,22 @@ internal class RWTrackerWindow : TrackerWindow<RivalWingsMatch> {
 
         using(var tabBar = ImRaii.TabBar("TabBar", ImGuiTabBarFlags.None)) {
             if(tabBar) {
-                Tab("Matches", () => {
+                Tab(Loc.T("Matches"), () => {
                     _matches.Draw();
                 }, _matches.RefreshActive, 0f);
-                Tab("Summary", () => {
+                Tab(Loc.T("Summary"), () => {
                     using(ImRaii.Child("SummaryChild")) {
                         _summary.Draw();
                     }
                 }, _summary.RefreshActive, _summary.RefreshProgress);
-                Tab("Records", () => {
+                Tab(Loc.T("Records"), () => {
                     using(ImRaii.Child("RecordsChild")) {
                         _records.Draw();
                     }
                 }, _records.RefreshActive, _records.RefreshProgress);
-                Tab("Jobs", _jobs.Draw, _jobs.RefreshActive, _jobs.RefreshProgress);
-                Tab("Players", _players.Draw, _players.RefreshActive, _players.RefreshProgress);
-                Tab("Profile", () => {
+                Tab(Loc.T("Jobs"), _jobs.Draw, _jobs.RefreshActive, _jobs.RefreshProgress);
+                Tab(Loc.T("Players"), _players.Draw, _players.RefreshActive, _players.RefreshProgress);
+                Tab(Loc.T("Profile"), () => {
                     using(ImRaii.Child("ProfileChild")) {
                         _profile.Draw();
                     }

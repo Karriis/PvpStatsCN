@@ -1,0 +1,17 @@
+{
+  "Author": "SaMo, Karriis",
+  "Name": "PvP 战绩统计（中文增强版）",
+  "Punchline": "记录并分析 PvP 对局与战绩。",
+  "Description": "基于 PvP Tracker 的简体中文增强版本。记录、浏览和筛选水晶冲突、纷争前线及烈羽争锋的历史对局；查看对局计分板，以及胜率、场均伤害等汇总统计。",
+  "InternalName": "PvpStatsCN",
+  "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
+  "ApplicableVersion": "any",
+  "Changelog": "* 新增简体中文界面与语言切换。\n* 使用独立插件标识并支持从原版迁移战绩。",
+  "Tags": [
+    "pvp",
+    "statistics",
+    "战绩",
+    "中文"
+  ],
+  "IconUrl": "https://raw.githubusercontent.com/Karriis/PvpStatsCN/main/images/icon.png"
+}

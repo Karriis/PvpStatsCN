@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Bindings.ImPlot;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -218,20 +218,20 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         if(_timeline != null) {
             using(var tabBar = ImRaii.TabBar("TabBar")) {
                 if(Match.PlayerScoreboards != null) {
-                    using var tab = ImRaii.TabItem("Scoreboard");
+                    using var tab = ImRaii.TabItem(Loc.T("Scoreboard"));
                     if(tab) {
-                        if(CurrentTab != "Scoreboard") {
+                        if(CurrentTab != Loc.T("Scoreboard")) {
                             SetWindowSize(_scoreboardSize);
-                            CurrentTab = "Scoreboard";
+                            CurrentTab = Loc.T("Scoreboard");
                         }
                         DrawScoreboard();
                     }
                 }
-                using(var tab2 = ImRaii.TabItem("Graphs")) {
+                using(var tab2 = ImRaii.TabItem(Loc.T("Graphs"))) {
                     if(tab2) {
-                        if(CurrentTab != "Graphs") {
+                        if(CurrentTab != Loc.T("Graphs")) {
                             SetWindowSize(new Vector2(975, 800));
-                            CurrentTab = "Graphs";
+                            CurrentTab = Loc.T("Graphs");
                         }
                         DrawGraphs();
                     }
@@ -300,38 +300,38 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         if(!table) return;
 
         var widthStyle = Plugin.Configuration.StretchScoreboardColumns ?? false ? ImGuiTableColumnFlags.WidthStretch : ImGuiTableColumnFlags.WidthFixed;
-        ImGui.TableSetupColumn("Alliance", widthStyle | ImGuiTableColumnFlags.NoHeaderLabel, ImGuiHelpers.GlobalScale * 10f, 3);
+        ImGui.TableSetupColumn(Loc.T("Alliance"), widthStyle | ImGuiTableColumnFlags.NoHeaderLabel, ImGuiHelpers.GlobalScale * 10f, 3);
         if(Match.MaxBattleHigh != null) {
-            ImGui.TableSetupColumn("Peak Battle High", widthStyle | ImGuiTableColumnFlags.NoHeaderLabel, ImGuiHelpers.GlobalScale * 15f, 4);
+            ImGui.TableSetupColumn(Loc.T("Peak Battle High"), widthStyle | ImGuiTableColumnFlags.NoHeaderLabel, ImGuiHelpers.GlobalScale * 15f, 4);
         }
-        ImGui.TableSetupColumn("Name", widthStyle, ImGuiHelpers.GlobalScale * 200f, 0);
-        ImGui.TableSetupColumn("Home World", widthStyle, ImGuiHelpers.GlobalScale * 110f, 1);
-        ImGui.TableSetupColumn("Job", widthStyle, ImGuiHelpers.GlobalScale * 50f, 2);
-        ImGui.TableSetupColumn("Kills", widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)"Kills".GetHashCode());
-        ImGui.TableSetupColumn("Deaths", widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)"Deaths".GetHashCode());
-        ImGui.TableSetupColumn("Assists", widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)"Assists".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Name"), widthStyle, ImGuiHelpers.GlobalScale * 200f, 0);
+        ImGui.TableSetupColumn(Loc.T("Home World"), widthStyle, ImGuiHelpers.GlobalScale * 110f, 1);
+        ImGui.TableSetupColumn(Loc.T("Job"), widthStyle, ImGuiHelpers.GlobalScale * 50f, 2);
+        ImGui.TableSetupColumn(Loc.T("Kills"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Kills").GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Deaths"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Deaths").GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Assists"), widthStyle, ImGuiHelpers.GlobalScale * 52f, (uint)Loc.T("Assists").GetHashCode());
         if(hasDamageToNPCs) {
-            ImGui.TableSetupColumn("Damage to PCs", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToPCs".GetHashCode());
+            ImGui.TableSetupColumn(Loc.T("Damage to PCs"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToPCs".GetHashCode());
             var npcDamageName = Match.Arena == FrontlineMap.FieldsOfGlory ? "Ice Damage" : "Drone Damage";
             ImGui.TableSetupColumn(npcDamageName, widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageToOther".GetHashCode());
-            ImGui.TableSetupColumn("Damage Dealt", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageDealt".GetHashCode());
+            ImGui.TableSetupColumn(Loc.T("Damage Dealt"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageDealt".GetHashCode());
         } else {
-            ImGui.TableSetupColumn("Damage Dealt", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageDealt".GetHashCode());
+            ImGui.TableSetupColumn(Loc.T("Damage Dealt"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageDealt".GetHashCode());
         }
-        ImGui.TableSetupColumn("Damage Taken", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageTaken".GetHashCode());
-        ImGui.TableSetupColumn("HP Restored", widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"HPRestored".GetHashCode());
-        ImGui.TableSetupColumn("Special", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 65f, (uint)"Special1".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Taken"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"DamageTaken".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("HP Restored"), widthStyle, ImGuiHelpers.GlobalScale * 70f, (uint)"HPRestored".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Special"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 65f, (uint)"Special1".GetHashCode());
         if(hasOccupations) {
-            ImGui.TableSetupColumn("Occupations", widthStyle, ImGuiHelpers.GlobalScale * 55f, (uint)"Occupations".GetHashCode());
+            ImGui.TableSetupColumn(Loc.T("Occupations"), widthStyle, ImGuiHelpers.GlobalScale * 55f, (uint)Loc.T("Occupations").GetHashCode());
         }
         if(hasClaimTime) {
-            ImGui.TableSetupColumn("Claim Time", widthStyle, ImGuiHelpers.GlobalScale * 55f, (uint)"ClaimTime".GetHashCode());
+            ImGui.TableSetupColumn(Loc.T("Claim Time"), widthStyle, ImGuiHelpers.GlobalScale * 55f, (uint)"ClaimTime".GetHashCode());
         }
-        ImGui.TableSetupColumn("Damage Dealt per Kill/Assist", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerKA".GetHashCode());
-        ImGui.TableSetupColumn("Damage Dealt per Life", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerLife".GetHashCode());
-        ImGui.TableSetupColumn("Damage Taken per Life", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageTakenPerLife".GetHashCode());
-        ImGui.TableSetupColumn("HP Restored per Life", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"HPRestoredPerLife".GetHashCode());
-        ImGui.TableSetupColumn("KDA Ratio", widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 50f, (uint)"KDA".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Dealt per Kill/Assist"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerKA".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Dealt per Life"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageDealtPerLife".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("Damage Taken per Life"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"DamageTakenPerLife".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("HP Restored per Life"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 100f, (uint)"HPRestoredPerLife".GetHashCode());
+        ImGui.TableSetupColumn(Loc.T("KDA Ratio"), widthStyle | ImGuiTableColumnFlags.DefaultHide, ImGuiHelpers.GlobalScale * 50f, (uint)"KDA".GetHashCode());
 
         if(Match.MaxBattleHigh != null) {
             ImGui.TableSetupScrollFreeze(3, 1);
@@ -356,77 +356,77 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         }
 
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Alliance", 0, false);
+            ImGuiHelper.DrawTableHeader(Loc.T("Alliance"), 0, false);
         }
         if(Match.MaxBattleHigh != null) {
             if(ImGui.TableNextColumn()) {
-                ImGuiHelper.DrawTableHeader("Peak Battle High", 0, false);
+                ImGuiHelper.DrawTableHeader(Loc.T("Peak Battle High"), 0, false);
             }
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Name", 0);
+            ImGuiHelper.DrawTableHeader(Loc.T("Name"), 0);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Home World", 0);
+            ImGuiHelper.DrawTableHeader(Loc.T("Home World"), 0);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Job", 1);
+            ImGuiHelper.DrawTableHeader(Loc.T("Job"), 1);
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Kills");
+            ImGuiHelper.DrawTableHeader(Loc.T("Kills"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Deaths");
+            ImGuiHelper.DrawTableHeader(Loc.T("Deaths"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Assists");
+            ImGuiHelper.DrawTableHeader(Loc.T("Assists"));
         }
         if(hasDamageToNPCs) {
             if(ImGui.TableNextColumn()) {
-                ImGuiHelper.DrawTableHeader("Damage\nto PCs");
+                ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto PCs"));
             }
             if(ImGui.TableNextColumn()) {
-                ImGuiHelper.DrawTableHeader("Damage\nto Other");
+                ImGuiHelper.DrawTableHeader(Loc.T("Damage\nto Other"));
             }
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage\nDealt");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nDealt"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage\nTaken");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage\nTaken"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("HP\nRestored");
+            ImGuiHelper.DrawTableHeader(Loc.T("HP\nRestored"));
         }
         if(ImGui.TableNextColumn()) {
             ImGuiHelper.RightAlignCursor2("(?)", -20f * ImGuiHelpers.GlobalScale);
             ImGui.TableHeader("");
-            ImGuiHelper.HelpMarker("Not sure what this is. It's related to healing.", true);
+            ImGuiHelper.HelpMarker(Loc.T("Not sure what this is. It's related to healing."), true);
         }
         if(hasOccupations) {
             if(ImGui.TableNextColumn()) {
-                ImGuiHelper.DrawTableHeader("Occup-\nations");
+                ImGuiHelper.DrawTableHeader(Loc.T("Occup-\nations"));
             }
         }
         if(hasClaimTime) {
             if(ImGui.TableNextColumn()) {
-                ImGuiHelper.DrawTableHeader("Claim\nTime");
+                ImGuiHelper.DrawTableHeader(Loc.T("Claim\nTime"));
             }
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage Dealt\nper Kill/Assist");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage Dealt\nper Kill/Assist"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage Dealt\nper Life");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage Dealt\nper Life"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("Damage Taken\nper Life");
+            ImGuiHelper.DrawTableHeader(Loc.T("Damage Taken\nper Life"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("HP Restored\nper Life");
+            ImGuiHelper.DrawTableHeader(Loc.T("HP Restored\nper Life"));
         }
         if(ImGui.TableNextColumn()) {
-            ImGuiHelper.DrawTableHeader("KDA\nRatio");
+            ImGuiHelper.DrawTableHeader(Loc.T("KDA\nRatio"));
         }
 
         if(ShowTeamRows) {
@@ -663,20 +663,20 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
 
     private void DrawScoreboard() {
         ImGui.NewLine();
-        ImGuiHelper.HelpMarker("Right-click table header to show and hide columns including extra metrics.", true, true);
+        ImGuiHelper.HelpMarker(Loc.T("Right-click table header to show and hide columns including extra metrics."), true, true);
         using(var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing * 2.5f * ImGuiHelpers.GlobalScale)) {
             ImGui.SameLine();
         }
         //ImGui.AlignTextToFramePadding();
         ImGuiComponents.ToggleButton("##showPercentages", ref ShowPercentages);
         ImGui.SameLine();
-        ImGui.Text("Show team contributions");
+        ImGui.Text(Loc.T("Show team contributions"));
         using(var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing * 2.5f * ImGuiHelpers.GlobalScale)) {
             ImGui.SameLine();
         }
         ImGui.Checkbox("###showTeamRows", ref ShowTeamRows);
         ImGui.SameLine();
-        ImGui.Text("Show team totals");
+        ImGui.Text(Loc.T("Show team totals"));
         using(var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing * 2.5f * ImGuiHelpers.GlobalScale)) {
             ImGui.SameLine();
         }
@@ -699,7 +699,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
     }
 
     private void DrawTeamPointsGraph() {
-        using var plot = ImRaii.Plot("Team Points", new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
+        using var plot = ImRaii.Plot(Loc.T("Team Points"), new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.None);
 
         if(!plot) {
             return;
@@ -712,33 +712,33 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         ImPlot.SetupAxisLimitsConstraints(ImAxis.X1, 0, 1200);
         ImPlot.SetupAxisLimitsConstraints(ImAxis.Y1, 0, maxScore);
 
-        ImPlot.SetupAxes("Match Time", "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
+        ImPlot.SetupAxes(Loc.T("Match Time"), "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
         ImPlot.SetupLegend(ImPlotLocation.NorthWest, ImPlotLegendFlags.None);
 
         ImPlot.SetupAxisTicks(ImAxis.X1, ref _axisTicks[0], _axisTicks.Length, _axisLabels);
 
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetFrontlineTeamColor(FrontlineTeamName.Maelstrom))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Maelstrom", ref _teamPoints[FrontlineTeamName.Maelstrom].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Maelstrom"), ref _teamPoints[FrontlineTeamName.Maelstrom].Xs[0],
                 ref _teamPoints[FrontlineTeamName.Maelstrom].Ys[0],
                 _teamPoints[FrontlineTeamName.Maelstrom].Xs.Length, ImPlotStairsFlags.None);
         }
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetFrontlineTeamColor(FrontlineTeamName.Adders))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Adders", ref _teamPoints[FrontlineTeamName.Adders].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Adders"), ref _teamPoints[FrontlineTeamName.Adders].Xs[0],
                 ref _teamPoints[FrontlineTeamName.Adders].Ys[0],
                 _teamPoints[FrontlineTeamName.Adders].Xs.Length, ImPlotStairsFlags.None);
         }
         using(var style = ImRaii.PushColor(ImPlotCol.Line, Plugin.Configuration.GetFrontlineTeamColor(FrontlineTeamName.Flames))) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Flames", ref _teamPoints[FrontlineTeamName.Flames].Xs[0],
+            ImPlot.PlotStairs(Loc.T("Flames"), ref _teamPoints[FrontlineTeamName.Flames].Xs[0],
                 ref _teamPoints[FrontlineTeamName.Flames].Ys[0],
                 _teamPoints[FrontlineTeamName.Flames].Xs.Length, ImPlotStairsFlags.None);
         }
     }
 
     private void DrawBattleHighGraph() {
-        using var plot = ImRaii.Plot("Self Battle High", new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.NoLegend);
+        using var plot = ImRaii.Plot(Loc.T("Self Battle High"), new Vector2(ImGui.GetContentRegionAvail().X, 500f * ImGuiHelpers.GlobalScale), ImPlotFlags.NoLegend);
 
         if(!plot) {
             return;
@@ -757,7 +757,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
         ImPlot.SetupAxisLimitsConstraints(ImAxis.X1, 0, maxMatchLength);
         ImPlot.SetupAxisLimitsConstraints(ImAxis.Y1, 0, 110);
 
-        ImPlot.SetupAxes("Match Time", "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
+        ImPlot.SetupAxes(Loc.T("Match Time"), "", ImPlotAxisFlags.None, ImPlotAxisFlags.None);
         //ImPlot.SetupLegend(ImPlotLocation.NorthWest, ImPlotLegendFlags.Horizontal);
 
         ImPlot.SetupAxisTicks(ImAxis.X1, ref _axisTicks[0], _axisTicks.Length, _axisLabels);
@@ -795,7 +795,7 @@ internal class FrontlineMatchDetail : MatchDetail<FrontlineMatch> {
 
         using(var style = ImRaii.PushColor(ImPlotCol.Line, ImGuiColors.DalamudWhite)) {
             using var _ = ImRaii.PushStyle(ImPlotStyleVar.LineWeight, 2f * ImGuiHelpers.GlobalScale);
-            ImPlot.PlotStairs("Battle High", ref _playerBattleHigh.Xs[0],
+            ImPlot.PlotStairs(Loc.T("Battle High"), ref _playerBattleHigh.Xs[0],
                 ref _playerBattleHigh.Ys[0],
                 _playerBattleHigh.Xs.Length, ImPlotStairsFlags.None);
         }

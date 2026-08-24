@@ -10,11 +10,18 @@ using System.Threading;
 
 namespace PvpStats.Settings;
 
+public enum UiLanguageMode {
+    Auto,
+    English,
+    SimplifiedChinese,
+}
+
 [Serializable]
 public class Configuration : IPluginConfiguration {
     public static readonly int CurrentVersion = 0;
     public int Version { get; set; } = CurrentVersion;
     public string LastPluginVersion { get; set; } = "0.0.0.0";
+    public UiLanguageMode UiLanguage { get; set; } = UiLanguageMode.Auto;
     public bool? EnableDBCachingCC { get; set; }
     public bool? EnableDBCachingFL { get; set; }
     public bool? EnableDBCachingRW { get; set; }

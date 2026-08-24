@@ -1,0 +1,57 @@
+name: 发布库链版本
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-2022
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v5
+
+      - name: 安装 .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: 下载 Dalamud 开发运行库
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest-dalamud.zip
+          Expand-Archive -Force latest-dalamud.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+
+      - name: 构建 Release 插件包
+        run: dotnet build PvpStats.sln --configuration Release
+
+      - name: 生成插件仓库清单
+        shell: pwsh
+        run: |
+          ./scripts/New-PluginMaster.ps1 `
+            -ManifestPath ./PvpStats/bin/x64/Release/PvpStatsCN/PvpStatsCN.json `
+            -OutputPath ./pluginmaster.json `
+            -Repository $env:GITHUB_REPOSITORY
+
+      - name: 发布 GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $assets = @(
+            './PvpStats/bin/x64/Release/PvpStatsCN/latest.zip',
+            './pluginmaster.json'
+          )
+
+          gh release view $tag *> $null
+          if($LASTEXITCODE -eq 0) {
+            gh release upload $tag @assets --clobber
+          } else {
+            gh release create $tag @assets --title $tag --generate-notes
+          }

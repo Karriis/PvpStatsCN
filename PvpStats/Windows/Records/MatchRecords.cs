@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -53,7 +53,7 @@ internal abstract class MatchRecords<T> : Refreshable<T> where T : PvpMatch {
     }
 
     public void Draw() {
-        ImGuiHelper.HelpMarker("Records marked with an asterisk (*) not all matches are eligible for.");
+        ImGuiHelper.HelpMarker(Loc.T("Records marked with an asterisk (*) not all matches are eligible for."));
         ImGui.Separator();
         foreach(var match in Superlatives) {
             var x = match.Value;

@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using PvpStats.Helpers;
@@ -202,31 +202,31 @@ internal class FrontlineRecords : MatchRecords<FrontlineMatch> {
         }
 
         Superlatives = new();
-        AddSuperlative(longestWinStreakMatch, "Longest win streak", longestWinStreak.ToString());
-        AddSuperlative(longestLossStreakMatch, "Longest loss streak", longestLossStreak.ToString());
-        AddSuperlative(longestMatch, "Longest match", ImGuiHelper.GetTimeSpanString(longestMatch?.MatchDuration ?? TimeSpan.Zero));
-        AddSuperlative(shortestMatch, "Shortest match", ImGuiHelper.GetTimeSpanString(shortestMatch?.MatchDuration ?? TimeSpan.Zero));
+        AddSuperlative(longestWinStreakMatch, Loc.T("Longest win streak"), longestWinStreak.ToString());
+        AddSuperlative(longestLossStreakMatch, Loc.T("Longest loss streak"), longestLossStreak.ToString());
+        AddSuperlative(longestMatch, Loc.T("Longest match"), ImGuiHelper.GetTimeSpanString(longestMatch?.MatchDuration ?? TimeSpan.Zero));
+        AddSuperlative(shortestMatch, Loc.T("Shortest match"), ImGuiHelper.GetTimeSpanString(shortestMatch?.MatchDuration ?? TimeSpan.Zero));
         AddSuperlative(mostCombatPointsMatch, "Highest team combat point diff.", mostCombatPoints.ToString());
         AddSuperlative(lowestCombatPointsMatch, "Lowest team combat point diff.", lowestCombatPoints.ToString());
 
-        AddSuperlative(mostKillsMatch, "Most kills", mostKills.ToString());
-        AddSuperlative(mostDeathsMatch, "Most deaths", mostDeaths.ToString());
-        AddSuperlative(mostAssistsMatch, "Most assists", mostAssists.ToString());
-        AddSuperlative(mostDamageToPCsMatch, "Most damage to PCs", mostDamageToPCs.ToString());
+        AddSuperlative(mostKillsMatch, Loc.T("Most kills"), mostKills.ToString());
+        AddSuperlative(mostDeathsMatch, Loc.T("Most deaths"), mostDeaths.ToString());
+        AddSuperlative(mostAssistsMatch, Loc.T("Most assists"), mostAssists.ToString());
+        AddSuperlative(mostDamageToPCsMatch, Loc.T("Most damage to PCs"), mostDamageToPCs.ToString());
         if(mostDamageToOther > 0) {
-            AddSuperlative(mostDamageToOtherMatch, "Most damage to other", mostDamageToOther.ToString());
+            AddSuperlative(mostDamageToOtherMatch, Loc.T("Most damage to other"), mostDamageToOther.ToString());
         }
-        AddSuperlative(mostDamageTakenMatch, "Most damage taken", mostDamageTaken.ToString());
-        AddSuperlative(mostHPRestoredMatch, "Most HP restored", mostHPRestored.ToString());
-        AddSuperlative(mostKillsPerMinMatch, "Most kills per min", mostKillsPerMin.ToString("0.00"));
-        AddSuperlative(mostDeathsPerMinMatch, "Most deaths per min", mostDeathsPerMin.ToString("0.00"));
-        AddSuperlative(mostAssistsPerMinMatch, "Most assists per min", mostAssistsPerMin.ToString("0.00"));
-        AddSuperlative(mostDamageToPCsPerMinMatch, "Most damage to PCs per min", mostDamageToPCsPerMin.ToString("0"));
+        AddSuperlative(mostDamageTakenMatch, Loc.T("Most damage taken"), mostDamageTaken.ToString());
+        AddSuperlative(mostHPRestoredMatch, Loc.T("Most HP restored"), mostHPRestored.ToString());
+        AddSuperlative(mostKillsPerMinMatch, Loc.T("Most kills per min"), mostKillsPerMin.ToString("0.00"));
+        AddSuperlative(mostDeathsPerMinMatch, Loc.T("Most deaths per min"), mostDeathsPerMin.ToString("0.00"));
+        AddSuperlative(mostAssistsPerMinMatch, Loc.T("Most assists per min"), mostAssistsPerMin.ToString("0.00"));
+        AddSuperlative(mostDamageToPCsPerMinMatch, Loc.T("Most damage to PCs per min"), mostDamageToPCsPerMin.ToString("0"));
         if(mostDamageToOtherPerMin > 0) {
-            AddSuperlative(mostDamageToOtherPerMinMatch, "Most damage to other per min", mostDamageToOtherPerMin.ToString("0"));
+            AddSuperlative(mostDamageToOtherPerMinMatch, Loc.T("Most damage to other per min"), mostDamageToOtherPerMin.ToString("0"));
         }
-        AddSuperlative(mostDamageTakenPerMinMatch, "Most damage taken per min", mostDamageTakenPerMin.ToString("0"));
-        AddSuperlative(mostHPRestoredPerMinMatch, "Most HP restored per min", mostHPRestoredPerMin.ToString("0"));
+        AddSuperlative(mostDamageTakenPerMinMatch, Loc.T("Most damage taken per min"), mostDamageTakenPerMin.ToString("0"));
+        AddSuperlative(mostHPRestoredPerMinMatch, Loc.T("Most HP restored per min"), mostHPRestoredPerMin.ToString("0"));
 
         AddSuperlative(fastestBHVMatch, "* Fastest Battle High V", ImGuiHelper.GetTimeSpanString(fastestBHV));
         AddSuperlative(battleHighSpikeMatch, "* Highest Battle High chain", $"+{battleHighSpikeMatch?.BattleHighSpike.ToString() ?? ""} in {battleHighSpikeMatch?.BattleHighSpikeTime.Value.TotalSeconds:#.0}s");
@@ -240,10 +240,10 @@ internal class FrontlineRecords : MatchRecords<FrontlineMatch> {
         using(var table = ImRaii.Table("match", 4, ImGuiTableFlags.NoBordersInBody | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.NoClip | ImGuiTableFlags.NoSavedSettings)) {
             if(table) {
                 var widthStyle = Plugin.Configuration.StretchScoreboardColumns ?? false ? ImGuiTableColumnFlags.WidthStretch : ImGuiTableColumnFlags.WidthFixed;
-                ImGui.TableSetupColumn("Time", widthStyle, ImGuiHelpers.GlobalScale * 110f);
-                ImGui.TableSetupColumn("Arena", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 155f);
-                ImGui.TableSetupColumn("Job", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
-                ImGui.TableSetupColumn("Result", ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
+                ImGui.TableSetupColumn(Loc.T("Time"), widthStyle, ImGuiHelpers.GlobalScale * 110f);
+                ImGui.TableSetupColumn(Loc.T("Arena"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 155f);
+                ImGui.TableSetupColumn(Loc.T("Job"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
+                ImGui.TableSetupColumn(Loc.T("Result"), ImGuiTableColumnFlags.WidthFixed, ImGuiHelpers.GlobalScale * 40f);
 
                 ImGui.TableNextColumn();
                 ImGui.Text($"{match.DutyStartTime.ToLocalTime():yyyy-MM-dd HH:mm}");

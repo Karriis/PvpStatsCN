@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using PvpStats.Helpers;
 using PvpStats.Types.Player;
 using System;
@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace PvpStats.Windows.Filter;
 public class LocalPlayerJobFilter : DataFilter {
-    public override string Name => "Job";
-    //public override string HelpMessage => "Comma-separate multiple party members.";
+    public override string Name => Loc.T("Job");
+    //public override string HelpMessage => Loc.T("Comma-separate multiple party members.");
     public Job PlayerJob { get; set; }
     public JobSubRole? JobRole { get; set; }
     public bool AnyJob { get; set; } = true;
@@ -23,7 +23,7 @@ public class LocalPlayerJobFilter : DataFilter {
         var allJobs = Enum.GetValues(typeof(Job)).Cast<Job>();
         var allRoles = Enum.GetValues(typeof(JobSubRole)).Cast<JobSubRole>();
         _roleCount = allRoles.Count();
-        _jobCombo.Add("All Jobs");
+        _jobCombo.Add(Loc.T("All Jobs"));
         foreach(var role in allRoles) {
             _jobCombo.Add(role.ToString());
         }

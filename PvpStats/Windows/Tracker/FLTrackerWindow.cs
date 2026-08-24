@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using PvpStats.Types.Match;
@@ -19,7 +19,7 @@ internal class FLTrackerWindow : TrackerWindow<FrontlineMatch> {
     private readonly FrontlineMeta _meta;
     private readonly FrontlinePvPProfile _profile;
 
-    public FLTrackerWindow(Plugin plugin) : base(plugin, plugin.FLStatsEngine, plugin.Configuration.FLWindowConfig, "Frontline Tracker") {
+    public FLTrackerWindow(Plugin plugin) : base(plugin, plugin.FLStatsEngine, plugin.Configuration.FLWindowConfig, Loc.T("Frontline Tracker")) {
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(435, 400),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
@@ -68,29 +68,29 @@ internal class FLTrackerWindow : TrackerWindow<FrontlineMatch> {
 
         using(var tabBar = ImRaii.TabBar("TabBar", ImGuiTabBarFlags.None)) {
             if(tabBar) {
-                Tab("Matches", () => {
+                Tab(Loc.T("Matches"), () => {
                     _matches.Draw();
                 }, _matches.RefreshActive, 0f);
-                Tab("Summary", () => {
+                Tab(Loc.T("Summary"), () => {
                     using(ImRaii.Child("SummaryChild")) {
                         _summary.Draw();
                     }
                 }, _summary.RefreshActive, _summary.RefreshProgress);
-                Tab("Records", () => {
+                Tab(Loc.T("Records"), () => {
                     using(ImRaii.Child("RecordsChild")) {
                         _records.Draw();
                     }
                 }, _records.RefreshActive, _records.RefreshProgress);
-                Tab("Jobs", () => {
+                Tab(Loc.T("Jobs"), () => {
                     _jobs.Draw();
                 }, _jobs.RefreshActive, _jobs.RefreshProgress);
-                Tab("Players", _players.Draw, _players.RefreshActive, _players.RefreshProgress);
-                Tab("Meta", () => {
+                Tab(Loc.T("Players"), _players.Draw, _players.RefreshActive, _players.RefreshProgress);
+                Tab(Loc.T("Meta"), () => {
                     using(ImRaii.Child("MetaChild")) {
                         _meta.Draw();
                     }
                 }, _meta.RefreshActive, _meta.RefreshProgress);
-                Tab("Profile", () => {
+                Tab(Loc.T("Profile"), () => {
                     using(ImRaii.Child("ProfileChild")) {
                         _profile.Draw();
                     }

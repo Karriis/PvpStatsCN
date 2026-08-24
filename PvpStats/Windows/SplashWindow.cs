@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -11,7 +11,7 @@ internal class SplashWindow : Window {
 
     private Plugin _plugin;
 
-    public SplashWindow(Plugin plugin) : base("PvP Tracker") {
+    public SplashWindow(Plugin plugin) : base(Loc.T("PvP Tracker")) {
         _plugin = plugin;
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(185, 175),
@@ -21,15 +21,15 @@ internal class SplashWindow : Window {
     }
 
     public override void Draw() {
-        ImGui.TextUnformatted("Trackers:");
-        if(ImGui.Button("Crystalline Conflict")) {
+        ImGui.TextUnformatted(Loc.T("Trackers:"));
+        if(ImGui.Button(Loc.T("Crystalline Conflict"))) {
             _plugin.WindowManager.OpenCCWindow();
 
         }
-        if(ImGui.Button("Frontline")) {
+        if(ImGui.Button(Loc.T("Frontline"))) {
             _plugin.WindowManager.OpenFLWindow();
         }
-        if(ImGui.Button("Rival Wings")) {
+        if(ImGui.Button(Loc.T("Rival Wings"))) {
             _plugin.WindowManager.OpenRWWindow();
         }
 
@@ -40,7 +40,7 @@ internal class SplashWindow : Window {
                 _plugin.WindowManager.OpenConfigWindow();
             }
         }
-        ImGuiHelper.WrappedTooltip("Settings");
+        ImGuiHelper.WrappedTooltip(Loc.T("Settings"));
         ImGui.SameLine();
         //ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - 30f * ImGuiHelpers.GlobalScale);
         ImGuiHelper.DonateButton();

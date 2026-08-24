@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -196,7 +196,7 @@ internal abstract class TrackerWindow<T> : Window where T : PvpMatch {
                 }
             }
         }
-        ImGuiHelper.WrappedTooltip($"{(CollapseFilters ? "Show filters" : "Hide filters")}");
+        ImGuiHelper.WrappedTooltip($"{(CollapseFilters ? Loc.T("Show filters") : Loc.T("Hide filters"))}");
     }
 
     protected Task<Task> RefreshTab(Func<Task> func) {
