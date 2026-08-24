@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要创建或更新的 Release 标签"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -42,8 +48,9 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
-          $tag = $env:GITHUB_REF_NAME
+          $tag = $env:RELEASE_TAG
           $assets = @(
             './PvpStats/bin/x64/Release/PvpStatsCN/latest.zip',
             './pluginmaster.json'
