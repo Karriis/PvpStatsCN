@@ -21,6 +21,9 @@ internal class StorageService {
     private const string AutoPlayerLinksTable = "playerlinks_auto";
     private const string ManualPlayerLinksTable = "playerlinks_manual";
     private const string CloudUploadsTable = "cloud_uploads";
+    private const string PlayerIdentityTable = "playeridentity";
+    private const string PlayerAliasObservationTable = "playeraliasobservation";
+    private const string IdentitySyncStateTable = "identitysyncstate";
 
     private Plugin _plugin;
     private SemaphoreSlim _dbLock = new SemaphoreSlim(1, 1);
@@ -73,6 +76,10 @@ internal class StorageService {
 
         var rwMatchCollection = GetRWMatches();
         rwMatchCollection.EnsureIndex(m => m.DutyStartTime);
+
+        GetPlayerIdentities().EnsureIndex(identity => identity.LastObservedAt);
+        GetPlayerAliasObservations().EnsureIndex(observation => observation.ContentId);
+        GetIdentitySyncStates().EnsureIndex(state => state.Status);
     }
 
     public void Dispose() {
@@ -219,6 +226,102 @@ internal class StorageService {
 
     internal async Task UpsertCloudUpload(CloudUploadRecord record) {
         await WriteToDatabase(() => GetCloudUploads().Upsert(record));
+    }
+
+    internal ILiteCollection<PlayerIdentityRecord> GetPlayerIdentities() => Database.GetCollection<PlayerIdentityRecord>(PlayerIdentityTable);
+    internal ILiteCollection<PlayerAliasObservationRecord> GetPlayerAliasObservations() => Database.GetCollection<PlayerAliasObservationRecord>(PlayerAliasObservationTable);
+    internal ILiteCollection<IdentitySyncStateRecord> GetIdentitySyncStates() => Database.GetCollection<IdentitySyncStateRecord>(IdentitySyncStateTable);
+
+    internal async Task<List<string>> ObserveIdentities(IEnumerable<IdentityObservationV1> observations, string gameVersion, string pluginVersion) {
+        var values = observations.ToList();
+        var observationIds = new List<string>(values.Count);
+        await WriteToDatabase(() => {
+            foreach(var value in values) {
+                var observedAt = value.ObservedAt.ToUniversalTime();
+                var identity = GetPlayerIdentities().FindById(value.ContentId);
+                if(identity == null) {
+                    identity = new PlayerIdentityRecord {
+                        Id = value.ContentId,
+                        AccountId = value.AccountId,
+                        CurrentName = value.CurrentAlias.Name,
+                        CurrentWorld = value.CurrentAlias.HomeWorld,
+                        CurrentWorldId = value.CurrentAlias.HomeWorldId,
+                        Sources = [value.Source],
+                        FirstObservedAt = observedAt,
+                        LastObservedAt = observedAt,
+                        GameVersion = gameVersion,
+                        PluginVersion = pluginVersion,
+                    };
+                } else {
+                    identity.AccountId ??= value.AccountId;
+                    identity.CurrentName = value.CurrentAlias.Name;
+                    identity.CurrentWorld = value.CurrentAlias.HomeWorld;
+                    identity.CurrentWorldId = value.CurrentAlias.HomeWorldId;
+                    identity.Sources.Add(value.Source);
+                    if(observedAt < identity.FirstObservedAt) identity.FirstObservedAt = observedAt;
+                    if(observedAt > identity.LastObservedAt) identity.LastObservedAt = observedAt;
+                    identity.GameVersion = gameVersion;
+                    identity.PluginVersion = pluginVersion;
+                }
+                GetPlayerIdentities().Upsert(identity);
+
+                var observation = PlayerAliasObservationRecord.FromPayload(value);
+                observationIds.Add(observation.Id);
+                if(GetPlayerAliasObservations().FindById(observation.Id) == null) {
+                    GetPlayerAliasObservations().Insert(observation);
+                }
+                if(GetIdentitySyncStates().FindById(observation.Id) == null) {
+                    GetIdentitySyncStates().Insert(new IdentitySyncStateRecord {
+                        Id = observation.Id,
+                        Status = CloudUploadStatus.Pending,
+                        CreatedAt = DateTime.UtcNow,
+                    });
+                }
+            }
+            return values.Count;
+        });
+        return observationIds;
+    }
+
+    internal List<(string Id, IdentityObservationV1 Observation)> GetPendingIdentityObservations(int limit) {
+        var states = GetIdentitySyncStates().Query()
+            .Where(state => state.Status != CloudUploadStatus.Uploaded)
+            .OrderBy(state => state.CreatedAt)
+            .Limit(limit)
+            .ToList();
+        return states.Select(state => (state.Id, GetPlayerAliasObservations().FindById(state.Id)))
+            .Where(item => item.Item2 != null)
+            .Select(item => (item.Id, item.Item2!.ToPayload()))
+            .ToList();
+    }
+
+    internal async Task MarkIdentitySyncAttempt(IEnumerable<string> ids) {
+        var values = ids.ToList();
+        await WriteToDatabase(() => {
+            foreach(var id in values) {
+                var state = GetIdentitySyncStates().FindById(id);
+                if(state == null) continue;
+                state.AttemptCount++;
+                state.LastAttemptAt = DateTime.UtcNow;
+                GetIdentitySyncStates().Update(state);
+            }
+            return values.Count;
+        });
+    }
+
+    internal async Task MarkIdentitySyncResult(IEnumerable<string> ids, bool uploaded, string? error) {
+        var values = ids.ToList();
+        await WriteToDatabase(() => {
+            foreach(var id in values) {
+                var state = GetIdentitySyncStates().FindById(id);
+                if(state == null) continue;
+                state.Status = uploaded ? CloudUploadStatus.Uploaded : CloudUploadStatus.Failed;
+                state.UploadedAt = uploaded ? DateTime.UtcNow : null;
+                state.LastError = error is { Length: > 500 } ? error[..500] : error;
+                GetIdentitySyncStates().Update(state);
+            }
+            return values.Count;
+        });
     }
 
     private void LogUpdate(string? id = null, int count = 0) {

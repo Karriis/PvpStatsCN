@@ -216,6 +216,7 @@ internal class RivalWingsMatchManager : MatchManager<RivalWingsMatch> {
                     if(_currentMatchTimeline != null) {
                         await Plugin.Storage.UpdateRWTimeline(_currentMatchTimeline);
                     }
+                    await Plugin.CloudUploads.EnqueueAsync(CurrentMatch!, _currentMatchTimeline);
                     _ = Plugin.WindowManager.RefreshRWWindow();
                 }
             });

@@ -1,8 +1,16 @@
 # pvplogs 战绩平台与玩家身份系统实施计划
 
-> 状态：已确认的总体方案
-> 更新日期：2026-08-25
+> 状态：首版已实现，进入发布配置与联调阶段
+> 更新日期：2026-08-26
 > 说明：前端视觉、页面布局与交互方案见 [pvplogs-frontend-plan.md](./pvplogs-frontend-plan.md)。
+
+## 0. 实施结果与后续决定
+
+- 当前代码按工作区拆分为 `D:\Codex\pvplog\pvplogs-web` 与 `D:\Codex\pvplog\pvplogs-api`，PvpStatsCN 插件继续独立维护于本仓库。
+- 按用户后续决定不制作 Docker；开发环境使用项目专用 PostgreSQL 16，生产基线采用 systemd、Nginx、PostgreSQL 备份和隔离导入单元。
+- HMAC、设备绑定、三种玩法、关键时间线、80% 多来源合并、身份加密、UsedName 增量观察、账号级隐私、TOTP、软删除、隔离导入和后台治理均已实现并通过自动化测试。
+- 对局上传的实际统一入口为 `/api/v1/plugin/uploads`；`/plugin/identities` 保留为独立增量身份同步入口。
+- 正式上线仍需由部署方提供域名、TLS、生产 PostgreSQL、SMTP 和独立生产密钥；这些外部配置不写入仓库。
 
 ## 1. 总体架构
 
@@ -15,7 +23,7 @@
 - 前端采用 Tailwind CSS、shadcn/ui、Framer Motion，并复制 [TripleD UI](https://github.com/moumen-soliman/uitripled) 组件到本项目维护。
 - 简体中文首发并预留 i18n；品牌、配色、字体和具体页面设计后续确定。
 - 公开端完整响应式，后台桌面优先。
-- 单台 VPS + Docker Compose 起步，部署地区保持可配置。
+- 单台 VPS + systemd、Nginx 和 PostgreSQL 起步，部署地区保持可配置；不制作 Docker。
 
 ## 2. PvpStatsCN 身份采集模块
 

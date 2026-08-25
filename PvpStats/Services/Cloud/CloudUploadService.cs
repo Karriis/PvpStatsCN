@@ -1,6 +1,7 @@
 using PvpStats.Types.Match;
 using PvpStats.Types.Match.Timeline;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -17,6 +18,8 @@ namespace PvpStats.Services.Cloud;
 internal sealed class CloudUploadService : IDisposable {
     private readonly Plugin _plugin;
     private readonly FrontlineUploadMapper _mapper;
+    private readonly CrystallineConflictUploadMapper _ccMapper;
+    private readonly RivalWingsUploadMapper _rwMapper;
     private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(20) };
     private readonly Channel<PendingUpload> _queue = Channel.CreateUnbounded<PendingUpload>(new UnboundedChannelOptions {
         SingleReader = true,
@@ -24,11 +27,15 @@ internal sealed class CloudUploadService : IDisposable {
     });
     private readonly CancellationTokenSource _shutdown = new();
     private readonly Task _worker;
+    private readonly object _identityQueueLock = new();
+    private readonly HashSet<string> _queuedIdentityIds = new(StringComparer.Ordinal);
     private bool _reportedNotReady;
 
     internal CloudUploadService(Plugin plugin) {
         _plugin = plugin;
         _mapper = new FrontlineUploadMapper(plugin);
+        _ccMapper = new CrystallineConflictUploadMapper(plugin);
+        _rwMapper = new RivalWingsUploadMapper(plugin);
         _worker = Task.Run(RunAsync);
     }
 
@@ -47,32 +54,57 @@ internal sealed class CloudUploadService : IDisposable {
             }
 
             var envelope = _mapper.Map(match, timeline);
-            var body = CloudUploadProtocol.SerializeAndCompress(envelope);
             var sourceMatchId = envelope.Matches[0].SourceMatchId;
-            var idempotencyKey = CloudUploadProtocol.CreateIdempotencyKey(credentials.InstallationId, sourceMatchId);
-            var existing = _plugin.Storage.GetCloudUploads().FindById(sourceMatchId);
-            if(existing?.Status == CloudUploadStatus.Uploaded) {
-                return true;
-            }
-            var record = existing ?? new CloudUploadRecord {
-                Id = sourceMatchId,
-                Status = CloudUploadStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
-            };
-            record.Status = CloudUploadStatus.Pending;
-            record.LastError = null;
-            await _plugin.Storage.UpsertCloudUpload(record);
-            await _queue.Writer.WriteAsync(new PendingUpload(body, envelope.Client.PluginVersion, envelope.Client.BuildHash, idempotencyKey, sourceMatchId), _shutdown.Token);
-            return true;
+            return await EnqueueEnvelopeAsync(envelope, sourceMatchId, credentials);
         } catch(Exception ex) {
             _plugin.Log.Warning(ex, $"Frontline match {match.Id} was not queued for cloud upload.");
             return false;
         }
     }
 
+    internal async Task<bool> EnqueueAsync(CrystallineConflictMatch match, CrystallineConflictMatchTimeline? timeline = null) {
+        if(!_plugin.Configuration.CloudUploadEnabled || !_plugin.Configuration.CloudUploadConsentAccepted) return false;
+        try {
+            if(!TryGetEndpoint(out _) || !TryGetCredentials(out var credentials)) return false;
+            var envelope = _ccMapper.Map(match, timeline);
+            return await EnqueueEnvelopeAsync(envelope, envelope.CrystallineConflictMatches![0].SourceMatchId, credentials);
+        } catch(Exception ex) { _plugin.Log.Warning(ex, $"Crystalline Conflict match {match.Id} was not queued for cloud upload."); return false; }
+    }
+
+    internal async Task<bool> EnqueueAsync(RivalWingsMatch match, RivalWingsMatchTimeline? timeline = null) {
+        if(!_plugin.Configuration.CloudUploadEnabled || !_plugin.Configuration.CloudUploadConsentAccepted) return false;
+        try {
+            if(!TryGetEndpoint(out _) || !TryGetCredentials(out var credentials)) return false;
+            var envelope = _rwMapper.Map(match, timeline);
+            return await EnqueueEnvelopeAsync(envelope, envelope.RivalWingsMatches![0].SourceMatchId, credentials);
+        } catch(Exception ex) { _plugin.Log.Warning(ex, $"Rival Wings match {match.Id} was not queued for cloud upload."); return false; }
+    }
+
+    private async Task<bool> EnqueueEnvelopeAsync(UploadEnvelopeV1 envelope, string sourceMatchId, UploadCredentials credentials) {
+        var observations = envelope.IdentityObservations ?? [];
+        if(observations.Count > 0) {
+            await _plugin.Storage.ObserveIdentities(observations, envelope.Client.GameVersion, envelope.Client.PluginVersion);
+            envelope.IdentityObservations = null;
+            await EnqueueIdentityBacklogAsync(credentials);
+        }
+        var existing = _plugin.Storage.GetCloudUploads().FindById(sourceMatchId);
+        if(existing?.Status == CloudUploadStatus.Uploaded) return true;
+        var record = existing ?? new CloudUploadRecord { Id = sourceMatchId, Status = CloudUploadStatus.Pending, CreatedAt = DateTime.UtcNow };
+        record.Status = CloudUploadStatus.Pending; record.LastError = null;
+        await _plugin.Storage.UpsertCloudUpload(record);
+        var body = CloudUploadProtocol.SerializeAndCompress(envelope);
+        var idempotencyKey = CloudUploadProtocol.CreateIdempotencyKey(credentials.InstallationId, sourceMatchId);
+        await _queue.Writer.WriteAsync(new PendingUpload(body, envelope.Client.PluginVersion, envelope.Client.BuildHash, idempotencyKey, sourceMatchId, CloudUploadProtocol.UploadPath, null), _shutdown.Token);
+        return true;
+    }
+
     internal async Task EnqueueBacklogAsync() {
         if(!_plugin.Configuration.CloudUploadEnabled || !_plugin.Configuration.CloudUploadConsentAccepted) {
             return;
+        }
+
+        if(TryGetCredentials(out var credentials)) {
+            await EnqueueIdentityBacklogAsync(credentials);
         }
 
         var pendingIds = _plugin.Storage.GetCloudUploads().Query()
@@ -84,6 +116,43 @@ internal sealed class CloudUploadService : IDisposable {
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach(var match in _plugin.FLCache.Matches.Where(match => pendingIds.Contains(match.Id.ToString()))) {
             await EnqueueAsync(match, _plugin.FLCache.GetTimeline(match) as FrontlineMatchTimeline);
+        }
+        foreach(var match in _plugin.CCCache.Matches.Where(match => pendingIds.Contains(match.Id.ToString()))) {
+            await EnqueueAsync(match, _plugin.CCCache.GetTimeline(match) as CrystallineConflictMatchTimeline);
+        }
+        foreach(var match in _plugin.RWCache.Matches.Where(match => pendingIds.Contains(match.Id.ToString()))) {
+            await EnqueueAsync(match, _plugin.RWCache.GetTimeline(match) as RivalWingsMatchTimeline);
+        }
+    }
+
+    private async Task EnqueueIdentityBacklogAsync(UploadCredentials credentials) {
+        var pending = _plugin.Storage.GetPendingIdentityObservations(500);
+        lock(_identityQueueLock) {
+            pending = pending.Where(item => !_queuedIdentityIds.Contains(item.Id)).ToList();
+            foreach(var item in pending) _queuedIdentityIds.Add(item.Id);
+        }
+        if(pending.Count == 0) return;
+
+        var pluginVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+        var buildHash = CloudUploadProtocol.GetClientBuildHash();
+        var ids = pending.Select(item => item.Id).ToList();
+        var envelope = new UploadEnvelopeV1 {
+            ExportedAt = DateTime.UtcNow,
+            Client = new UploadClientV1 {
+                PluginVersion = pluginVersion,
+                GameVersion = GetCurrentGameVersion(),
+                BuildHash = buildHash,
+            },
+            Matches = [],
+            IdentityObservations = pending.Select(item => item.Observation).ToList(),
+        };
+        var body = CloudUploadProtocol.SerializeAndCompress(envelope);
+        var idempotencyKey = CloudUploadProtocol.CreateIdempotencyKey(credentials.InstallationId, "identity:" + string.Join(',', ids));
+        try {
+            await _queue.Writer.WriteAsync(new PendingUpload(body, pluginVersion, buildHash, idempotencyKey, idempotencyKey, CloudUploadProtocol.IdentityUploadPath, ids), _shutdown.Token);
+        } catch {
+            RemoveQueuedIdentities(ids);
+            throw;
         }
     }
 
@@ -204,45 +273,54 @@ internal sealed class CloudUploadService : IDisposable {
             }
 
             try {
-                if(!TryGetEndpoint(out var endpoint) || !TryGetCredentials(out var credentials)) {
+                if(!TryGetApiEndpoint(pending.Path, out var endpoint) || !TryGetCredentials(out var credentials)) {
                     return;
                 }
-                await RecordAttemptAsync(pending.SourceMatchId);
+                await RecordAttemptAsync(pending);
                 using var request = CreateRequest(endpoint, credentials, pending);
                 using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 if(response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Conflict) {
-                    await RecordUploadedAsync(pending.SourceMatchId);
-                    _plugin.Log.Information($"Uploaded Frontline match {pending.SourceMatchId}.");
+                    await RecordUploadedAsync(pending);
+                    _plugin.Log.Information($"Cloud upload completed for {pending.RecordId}.");
                     return;
                 }
                 if((int)response.StatusCode is >= 400 and < 500 && response.StatusCode != HttpStatusCode.TooManyRequests) {
                     lastError = $"HTTP {(int)response.StatusCode}";
-                    await RecordFailedAsync(pending.SourceMatchId, lastError);
-                    _plugin.Log.Warning($"Cloud upload rejected Frontline match {pending.SourceMatchId}: {lastError}.");
+                    await RecordFailedAsync(pending, lastError);
+                    _plugin.Log.Warning($"Cloud upload rejected {pending.RecordId}: {lastError}.");
                     return;
                 }
                 lastError = $"HTTP {(int)response.StatusCode}";
-                _plugin.Log.Warning($"Cloud upload attempt {attempt + 1} failed for {pending.SourceMatchId}: HTTP {(int)response.StatusCode}.");
+                _plugin.Log.Warning($"Cloud upload attempt {attempt + 1} failed for {pending.RecordId}: HTTP {(int)response.StatusCode}.");
             } catch(OperationCanceledException) when(cancellationToken.IsCancellationRequested) {
                 return;
             } catch(Exception ex) {
                 lastError = $"{ex.GetType().Name}: {ex.Message}";
-                _plugin.Log.Warning(ex, $"Cloud upload attempt {attempt + 1} failed for {pending.SourceMatchId}.");
+                _plugin.Log.Warning(ex, $"Cloud upload attempt {attempt + 1} failed for {pending.RecordId}.");
             }
         }
-        await RecordFailedAsync(pending.SourceMatchId, lastError ?? "Upload attempts exhausted.");
+        await RecordFailedAsync(pending, lastError ?? "Upload attempts exhausted.");
     }
 
-    private async Task RecordAttemptAsync(string sourceMatchId) {
-        var record = _plugin.Storage.GetCloudUploads().FindById(sourceMatchId);
+    private async Task RecordAttemptAsync(PendingUpload pending) {
+        if(pending.IdentityObservationIds is { Count: > 0 }) {
+            await _plugin.Storage.MarkIdentitySyncAttempt(pending.IdentityObservationIds);
+            return;
+        }
+        var record = _plugin.Storage.GetCloudUploads().FindById(pending.RecordId);
         if(record == null) return;
         record.AttemptCount++;
         record.LastAttemptAt = DateTime.UtcNow;
         await _plugin.Storage.UpsertCloudUpload(record);
     }
 
-    private async Task RecordUploadedAsync(string sourceMatchId) {
-        var record = _plugin.Storage.GetCloudUploads().FindById(sourceMatchId);
+    private async Task RecordUploadedAsync(PendingUpload pending) {
+        if(pending.IdentityObservationIds is { Count: > 0 }) {
+            await _plugin.Storage.MarkIdentitySyncResult(pending.IdentityObservationIds, true, null);
+            RemoveQueuedIdentities(pending.IdentityObservationIds);
+            return;
+        }
+        var record = _plugin.Storage.GetCloudUploads().FindById(pending.RecordId);
         if(record == null) return;
         record.Status = CloudUploadStatus.Uploaded;
         record.UploadedAt = DateTime.UtcNow;
@@ -250,8 +328,13 @@ internal sealed class CloudUploadService : IDisposable {
         await _plugin.Storage.UpsertCloudUpload(record);
     }
 
-    private async Task RecordFailedAsync(string sourceMatchId, string error) {
-        var record = _plugin.Storage.GetCloudUploads().FindById(sourceMatchId);
+    private async Task RecordFailedAsync(PendingUpload pending, string error) {
+        if(pending.IdentityObservationIds is { Count: > 0 }) {
+            await _plugin.Storage.MarkIdentitySyncResult(pending.IdentityObservationIds, false, error);
+            RemoveQueuedIdentities(pending.IdentityObservationIds);
+            return;
+        }
+        var record = _plugin.Storage.GetCloudUploads().FindById(pending.RecordId);
         if(record == null) return;
         record.Status = CloudUploadStatus.Failed;
         record.LastError = error.Length <= 500 ? error : error[..500];
@@ -260,7 +343,7 @@ internal sealed class CloudUploadService : IDisposable {
 
     private static HttpRequestMessage CreateRequest(Uri endpoint, UploadCredentials credentials, PendingUpload pending) {
         var nonce = Guid.NewGuid().ToString();
-        var signed = CloudUploadProtocol.Sign(pending.Body, credentials, pending.PluginVersion, pending.BuildHash, DateTimeOffset.UtcNow, nonce, pending.IdempotencyKey);
+        var signed = CloudUploadProtocol.Sign(pending.Body, credentials, pending.PluginVersion, pending.BuildHash, DateTimeOffset.UtcNow, nonce, pending.IdempotencyKey, pending.Path);
         var request = new HttpRequestMessage(HttpMethod.Post, endpoint) {
             Content = new ByteArrayContent(pending.Body),
         };
@@ -268,6 +351,12 @@ internal sealed class CloudUploadService : IDisposable {
         request.Content.Headers.ContentEncoding.Add("gzip");
         AddSignedHeaders(request, credentials, signed, nonce, pending.PluginVersion, pending.BuildHash, pending.IdempotencyKey);
         return request;
+    }
+
+    private void RemoveQueuedIdentities(IEnumerable<string> ids) {
+        lock(_identityQueueLock) {
+            foreach(var id in ids) _queuedIdentityIds.Remove(id);
+        }
     }
 
     private static void AddSignedHeaders(HttpRequestMessage request, UploadCredentials credentials, SignedUploadRequest signed, string nonce, string pluginVersion, string buildHash, string idempotencyKey) {
@@ -338,7 +427,7 @@ internal sealed class CloudUploadService : IDisposable {
         _httpClient.Dispose();
     }
 
-    private sealed record PendingUpload(byte[] Body, string PluginVersion, string BuildHash, string IdempotencyKey, string SourceMatchId);
+    private sealed record PendingUpload(byte[] Body, string PluginVersion, string BuildHash, string IdempotencyKey, string RecordId, string Path, IReadOnlyList<string>? IdentityObservationIds);
     private sealed class CloudBindingResponse {
         public string InstallationId { get; init; } = "";
         public string AccountId { get; init; } = "";

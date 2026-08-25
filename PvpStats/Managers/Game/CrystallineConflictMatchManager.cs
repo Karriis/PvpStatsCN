@@ -632,6 +632,7 @@ internal class CrystallineConflictMatchManager : IDisposable {
                 if(_currentMatchTimeline != null) {
                     await _plugin.Storage.UpdateCCTimeline(_currentMatchTimeline);
                 }
+                await _plugin.CloudUploads.EnqueueAsync(_currentMatch!, _currentMatchTimeline);
                 _ = _plugin.WindowManager.RefreshCCWindow();
             }
         });
@@ -656,6 +657,7 @@ internal class CrystallineConflictMatchManager : IDisposable {
                 if(_currentMatchTimeline != null) {
                     await _plugin.Storage.UpdateCCTimeline(_currentMatchTimeline);
                 }
+                await _plugin.CloudUploads.EnqueueAsync(_currentMatch!, _currentMatchTimeline);
                 _ = _plugin.WindowManager.RefreshCCWindow();
             }
         });
