@@ -3,7 +3,7 @@
     "Author": "SaMo, Karriis",
     "Name": "PvP 战绩统计（中文增强版）",
     "InternalName": "PvpStatsCN",
-    "AssemblyVersion": "2.7.0.4",
+    "AssemblyVersion": "2.7.0.5",
     "Description": "基于 PvP Tracker 的简体中文增强版本。记录、浏览和筛选水晶冲突、纷争前线及烈羽争锋的历史对局；查看对局计分板，以及胜率、场均伤害等汇总统计。重要：请在进入 PvP 对局前启用插件，进入对局后不要启用、禁用或重载插件。",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
@@ -20,12 +20,12 @@
     "LoadPriority": 0,
     "IconUrl": "https://raw.githubusercontent.com/Karriis/PvpStatsCN/main/images/icon.png",
     "Punchline": "记录并分析 PvP 对局与战绩。",
-    "Changelog": "* 修复对局列表、计分板、玩家列表和纪录页仍显示职业缩写的问题。\n* 修复职业统计页仍显示英文职能枚举的问题。\n* 汉化列表中的阵营与名次，并调整中文列宽。",
+    "Changelog": "* 新增可选的 PvP Logs 云端上传、账号绑定、HMAC 签名、失败补传和本机解绑。\n* 继承原版 PvpStats 的历史数据库与配置，避免汉化版升级后丢失数据。\n* 接入 UsedName / PlayerTrack 曾用名同步，并在依赖不可用时明确提示。\n* 补齐纷争前线地图、阵营、名次、职业与职能汉化。",
     "AcceptsFeedback": true,
     "IsHide": false,
     "IsTestingExclusive": false,
     "DownloadLinkInstall": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
     "DownloadLinkUpdate": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
-    "LastUpdate": "1787597785"
+    "LastUpdate": "1787669165"
   }
 ]
