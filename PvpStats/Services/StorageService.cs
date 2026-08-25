@@ -2,6 +2,7 @@
 using PvpStats.Types.Match;
 using PvpStats.Types.Match.Timeline;
 using PvpStats.Types.Player;
+using PvpStats.Services.Cloud;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,6 +20,7 @@ internal class StorageService {
     private const string RWTimelineTable = "rwtimeline";
     private const string AutoPlayerLinksTable = "playerlinks_auto";
     private const string ManualPlayerLinksTable = "playerlinks_manual";
+    private const string CloudUploadsTable = "cloud_uploads";
 
     private Plugin _plugin;
     private SemaphoreSlim _dbLock = new SemaphoreSlim(1, 1);
@@ -209,6 +211,14 @@ internal class StorageService {
         //kind of hacky
         GetManualLinks().DeleteAll();
         await WriteToDatabase(() => GetManualLinks().Insert(links.Where(x => x.Id != null)));
+    }
+
+    internal ILiteCollection<CloudUploadRecord> GetCloudUploads() {
+        return Database.GetCollection<CloudUploadRecord>(CloudUploadsTable);
+    }
+
+    internal async Task UpsertCloudUpload(CloudUploadRecord record) {
+        await WriteToDatabase(() => GetCloudUploads().Upsert(record));
     }
 
     private void LogUpdate(string? id = null, int count = 0) {

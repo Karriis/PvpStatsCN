@@ -25,6 +25,13 @@ internal class ConfigWindow : Window {
 
     private float _saveOpacity = 0f;
     private bool _ipcUpdateInProgress = false;
+    private string _cloudApiUrl;
+    private string _cloudBindingCode = "";
+    private string _cloudStatusMessage = "";
+    private bool _cloudBindingInProgress;
+    private bool _confirmCloudUnbind;
+    private string _cloudOwnershipCode = "";
+    private bool _cloudOwnershipInProgress;
 
     public ConfigWindow(Plugin plugin) : base(Loc.T("PvP Tracker Settings")) {
         SizeConstraints = new WindowSizeConstraints {
@@ -32,6 +39,7 @@ internal class ConfigWindow : Window {
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
         _plugin = plugin;
+        _cloudApiUrl = plugin.Configuration.CloudUploadApiBaseUrl;
         _newManualLink = new();
         //_plugin.DataQueue.QueueDataOperation(Refresh);
     }
@@ -86,9 +94,130 @@ internal class ConfigWindow : Window {
                     DrawPerformanceSettings();
                 }
             }
+            using(var tab = ImRaii.TabItem(Loc.T("Cloud Upload"))) {
+                if(tab) {
+                    DrawCloudUploadSettings();
+                }
+            }
             using(var tab = ImRaii.TabItem(Loc.T("Misc"))) {
                 if(tab) {
                     DrawMiscSettings();
+                }
+            }
+        }
+    }
+
+    private void DrawCloudUploadSettings() {
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("PvP Logs Cloud"));
+        ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
+        ImGui.TextWrapped(Loc.T("Cloud upload is optional and disabled by default. Local match history continues to work without binding an account."));
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(1f, 0.72f, 0.2f, 1f), Loc.T("Before enabling cloud upload:"));
+        ImGui.BulletText(Loc.T("A complete Frontline result contains all participants, jobs, teams and scoreboard values."));
+        ImGui.BulletText(Loc.T("After consent, new results also retain Account ID and Content ID for identity matching."));
+        ImGui.BulletText(Loc.T("Validated matches may appear on public pages with privacy protection applied."));
+        ImGui.BulletText(Loc.T("You can stop future uploads here and request hiding or deletion through the website."));
+        ImGui.BulletText(Loc.T("Chat, debug logs, memory dumps and raw action telemetry are never uploaded."));
+        ImGui.PopTextWrapPos();
+        ImGui.Spacing();
+
+        var consent = _plugin.Configuration.CloudUploadConsentAccepted;
+        if(ImGui.Checkbox(Loc.T("I understand the data scope and agree to cloud processing"), ref consent)) {
+            _plugin.Configuration.CloudUploadConsentAccepted = consent;
+            if(!consent) {
+                _plugin.Configuration.CloudUploadEnabled = false;
+            }
+            _plugin.Configuration.Save();
+        }
+
+        ImGui.Separator();
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Account binding"));
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        if(ImGui.InputTextWithHint("###CloudApiUrl", Loc.T("API address (HTTPS)"), ref _cloudApiUrl, 256)) {
+            _plugin.Configuration.CloudUploadApiBaseUrl = _cloudApiUrl.Trim();
+        }
+        if(ImGui.IsItemDeactivatedAfterEdit()) {
+            _plugin.Configuration.Save();
+        }
+
+        var bound = _plugin.CloudUploads.IsBound;
+        if(bound) {
+            ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), Loc.T("Bound to account: {0}", _plugin.Configuration.CloudUploadAccountId));
+        } else {
+            using var disabled = ImRaii.Disabled(!consent || _cloudBindingInProgress);
+            ImGui.SetNextItemWidth(Math.Max(220f * ImGuiHelpers.GlobalScale, ImGui.GetContentRegionAvail().X - 130f * ImGuiHelpers.GlobalScale));
+            ImGui.InputTextWithHint("###CloudBindingCode", Loc.T("Binding code"), ref _cloudBindingCode, 32);
+            ImGui.SameLine();
+            if(ImGui.Button(_cloudBindingInProgress ? Loc.T("Binding...") : Loc.T("Bind account"))) {
+                _cloudBindingInProgress = true;
+                _cloudStatusMessage = Loc.T("Connecting to binding service...");
+                _plugin.Configuration.CloudUploadApiBaseUrl = _cloudApiUrl.Trim();
+                _plugin.Configuration.Save();
+                _ = Task.Run(async () => {
+                    var result = await _plugin.CloudUploads.BindAsync(_cloudBindingCode);
+                    _cloudStatusMessage = Loc.T(result.Message);
+                    if(result.Success) {
+                        _cloudBindingCode = "";
+                    }
+                    _cloudBindingInProgress = false;
+                });
+            }
+        }
+
+        if(!string.IsNullOrWhiteSpace(_cloudStatusMessage)) {
+            ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
+            ImGui.TextWrapped(_cloudStatusMessage);
+            ImGui.PopTextWrapPos();
+        }
+
+        if(bound) {
+            var enabled = _plugin.Configuration.CloudUploadEnabled;
+            using(var disabled = ImRaii.Disabled(!consent)) {
+                if(ImGui.Checkbox(Loc.T("Automatically upload new completed Frontline matches"), ref enabled)) {
+                    _plugin.Configuration.CloudUploadEnabled = enabled;
+                    _plugin.Configuration.CloudUploadApiBaseUrl = _cloudApiUrl.Trim();
+                    _plugin.Configuration.Save();
+                    if(enabled) {
+                        _ = _plugin.CloudUploads.EnqueueBacklogAsync();
+                    }
+                }
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Character ownership verification"));
+            ImGui.TextWrapped(Loc.T("Generate a verification code on the website account page, then enter it here while this bound plugin is running."));
+            using(var disabled = ImRaii.Disabled(_cloudOwnershipInProgress)) {
+                ImGui.SetNextItemWidth(Math.Max(220f * ImGuiHelpers.GlobalScale, ImGui.GetContentRegionAvail().X - 130f * ImGuiHelpers.GlobalScale));
+                ImGui.InputTextWithHint("###CloudOwnershipCode", Loc.T("Verification code"), ref _cloudOwnershipCode, 32);
+                ImGui.SameLine();
+                if(ImGui.Button(_cloudOwnershipInProgress ? Loc.T("Verifying...") : Loc.T("Verify character"))) {
+                    _cloudOwnershipInProgress = true;
+                    _cloudStatusMessage = Loc.T("Verifying character ownership...");
+                    _ = Task.Run(async () => {
+                        var result = await _plugin.CloudUploads.VerifyOwnershipAsync(_cloudOwnershipCode);
+                        _cloudStatusMessage = Loc.T(result.Message);
+                        if(result.Success) _cloudOwnershipCode = "";
+                        _cloudOwnershipInProgress = false;
+                    });
+                }
+            }
+
+            ImGui.Spacing();
+            if(!_confirmCloudUnbind) {
+                if(ImGui.Button(Loc.T("Remove local binding"))) {
+                    _confirmCloudUnbind = true;
+                }
+            } else {
+                ImGui.TextColored(new Vector4(1f, 0.45f, 0.35f, 1f), Loc.T("Remove the encrypted credential from this computer?"));
+                if(ImGui.Button(Loc.T("Confirm removal"))) {
+                    _plugin.CloudUploads.ClearCredentials();
+                    _confirmCloudUnbind = false;
+                    _cloudStatusMessage = Loc.T("Local binding removed. The server installation must be revoked from the website separately.");
+                }
+                ImGui.SameLine();
+                if(ImGui.Button(Loc.T("Cancel"))) {
+                    _confirmCloudUnbind = false;
                 }
             }
         }
@@ -418,16 +547,24 @@ internal class ConfigWindow : Window {
             });
         }
         ImGuiHelper.HelpMarker(Loc.T("Enable combining of player stats with different aliases linked with the same unique character or player."));
+        bool playerTrackAvailable = _plugin.PlayerLinksService.IsPlayerTrackAvailable;
         bool autoLinking = _plugin.Configuration.EnableAutoPlayerLinking;
-        if(ImGui.Checkbox(Loc.T("Enable auto linking (requires PlayerTrack)"), ref autoLinking)) {
-            _plugin.DataQueue.QueueDataOperation(() => {
-                _plugin.Configuration.EnableAutoPlayerLinking = autoLinking;
-                _plugin.Configuration.Save();
-                _plugin.PlayerLinksService.BuildLinkedAliases();
-                _ = _plugin.WindowManager.RefreshAll(true);
-            });
+        using(var disabledAutoLinking = ImRaii.Disabled(!playerTrackAvailable)) {
+            if(ImGui.Checkbox(Loc.T("Enable auto linking (requires PlayerTrack)"), ref autoLinking)) {
+                _plugin.DataQueue.QueueDataOperation(() => {
+                    _plugin.Configuration.EnableAutoPlayerLinking = autoLinking;
+                    _plugin.Configuration.Save();
+                    _plugin.PlayerLinksService.BuildLinkedAliases();
+                    _ = _plugin.WindowManager.RefreshAll(true);
+                });
+            }
         }
         ImGuiHelper.HelpMarker(Loc.T("Use name change data from PlayerTrack to create player links.\n\nDoes not work on your own character (for now)."));
+        if(playerTrackAvailable) {
+            ImGui.TextColored(new Vector4(0.25f, 0.75f, 0.35f, 1f), Loc.T("UsedName / PlayerTrack connected"));
+        } else {
+            ImGui.TextColored(new Vector4(0.95f, 0.6f, 0.2f, 1f), Loc.T("UsedName / PlayerTrack is not installed or enabled. Alias synchronization is unavailable; match recording still works."));
+        }
         bool manualLinking = _plugin.Configuration.EnableManualPlayerLinking;
         if(ImGui.Checkbox(Loc.T("Enable manual linking"), ref manualLinking)) {
             _plugin.DataQueue.QueueDataOperation(() => {
@@ -442,7 +579,7 @@ internal class ConfigWindow : Window {
             using(var tab = ImRaii.TabItem(Loc.T("Auto"))) {
                 if(tab) {
                     using var disabledButton = ImRaii.Disabled();
-                    if(!_ipcUpdateInProgress) {
+                    if(!_ipcUpdateInProgress && playerTrackAvailable) {
                         disabledButton.Dispose();
                     }
                     if(ImGui.Button(Loc.T("Update Now"))) {

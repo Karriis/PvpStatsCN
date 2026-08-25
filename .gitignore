@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Codex local analysis and scratch work
+.codex-temp/
+.codex-spreadsheet/
+outputs/

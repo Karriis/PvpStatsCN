@@ -31,6 +31,15 @@ public class Configuration : IPluginConfiguration {
     public bool? EnableTimelineFL { get; set; }
     public bool? EnableTimelineRW { get; set; }
 
+    // Cloud uploads are opt-in. The secret is encrypted with Windows DPAPI for the current user.
+    public bool CloudUploadEnabled { get; set; } = false;
+    public bool CloudUploadConsentAccepted { get; set; } = false;
+    public string CloudUploadApiBaseUrl { get; set; } = "";
+    public string CloudUploadInstallationId { get; set; } = "";
+    public string CloudUploadAccountId { get; set; } = "";
+    public string CloudUploadKeyVersion { get; set; } = "";
+    public string CloudUploadProtectedSecret { get; set; } = "";
+
     public bool? DisableMatchGuardsRW { get; set; }
     public bool EnablePlayerLinking { get; set; } = true;
     public bool EnableAutoPlayerLinking { get; set; } = true;

@@ -138,6 +138,7 @@ internal class FrontlineMatchManager : MatchManager<FrontlineMatch> {
                     if(_currentMatchTimeline != null) {
                         await Plugin.Storage.UpdateFLTimeline(_currentMatchTimeline);
                     }
+                    await Plugin.CloudUploads.EnqueueAsync(CurrentMatch!, _currentMatchTimeline);
 
                     //add delay to refresh to ensure all player payloads are received
                     _ = Task.Delay(1000).ContinueWith((t) => {
@@ -215,8 +216,8 @@ internal class FrontlineMatchManager : MatchManager<FrontlineMatch> {
             FrontlinePlayer newPlayer = new(playerName, job, (FrontlineTeamName)player.Team) {
                 ClassJobId = player.ClassJobId,
                 Alliance = player.Alliance % 3,
-                //AccountId = results.AccountId,
-                //ContentId = results.ContentId,
+                AccountId = Plugin.Configuration.CloudUploadConsentAccepted && player.AccountId != 0 ? player.AccountId : null,
+                ContentId = Plugin.Configuration.CloudUploadConsentAccepted && player.ContentId != 0 ? player.ContentId : null,
             };
             FrontlineScoreboard newScoreboard = new() {
                 Kills = player.Kills,

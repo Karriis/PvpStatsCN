@@ -6,6 +6,7 @@ using PvpStats.Managers;
 using PvpStats.Managers.Game;
 using PvpStats.Managers.Stats;
 using PvpStats.Services;
+using PvpStats.Services.Cloud;
 using PvpStats.Services.DataCache;
 using PvpStats.Settings;
 using PvpStats.Types.Match;
@@ -72,6 +73,7 @@ public sealed class Plugin : IDalamudPlugin {
     internal GameStateService GameState { get; init; }
     internal AtkNodeService AtkNodeService { get; init; }
     internal PlayerLinkService PlayerLinksService { get; init; }
+    internal CloudUploadService CloudUploads { get; init; }
 
     public Configuration Configuration { get; init; }
     internal MemoryService Functions { get; init; }
@@ -136,6 +138,7 @@ public sealed class Plugin : IDalamudPlugin {
             GameState = new(this);
             AtkNodeService = new(this);
             PlayerLinksService = new(this);
+            CloudUploads = new(this);
             Localization = new(this);
             CCStatsEngine = new(this);
             FLStatsEngine = new(this);
@@ -241,6 +244,7 @@ public sealed class Plugin : IDalamudPlugin {
 #endif
 
         Functions?.Dispose();
+        CloudUploads?.Dispose();
         CCMatchManager?.Dispose();
         FLMatchManager?.Dispose();
         RWMatchManager?.Dispose();
@@ -341,6 +345,8 @@ public sealed class Plugin : IDalamudPlugin {
         });
 
         await Task.WhenAll(ccValidationTask, flValidationTask, rwValidationTask);
+
+        await CloudUploads.EnqueueBacklogAsync();
 
         await WindowManager.RefreshAll();
         Configuration.LastPluginVersion = currentVersion?.ToString() ?? "0.0.0.0";

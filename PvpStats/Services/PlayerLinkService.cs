@@ -18,6 +18,7 @@ internal class PlayerLinkService {
     internal Dictionary<PlayerAlias, PlayerAlias> LinkedAliases { get; private set; } = [];
 
     internal bool RefreshInProgress { get; private set; }
+    internal bool IsPlayerTrackAvailable => GetPreviousAliasesFunction.HasFunction;
 
     internal PlayerLinkService(Plugin plugin) {
         _plugin = plugin;
@@ -138,6 +139,10 @@ internal class PlayerLinkService {
     //returns true if updates were made
     internal async Task BuildAutoLinksCache() {
         //if(!IsInitialized() && !Initialize()) return;
+        if(!IsPlayerTrackAvailable) {
+            Plugin.Log2.Warning("PlayerTrack IPC is unavailable. UsedName alias synchronization was skipped.");
+            return;
+        }
         Plugin.Log2.Information("Building player alias links cache from PlayerTrack IPC data...");
         //get players
         var ccMatches = _plugin.CCCache.Matches.ToList();
