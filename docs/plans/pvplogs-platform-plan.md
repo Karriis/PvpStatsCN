@@ -140,7 +140,7 @@ GameAccount
 
 ### 4.2 `data.db` 导入
 
-- 用户可选择仅上传新战绩，也可以在网站上传 PvpStatsCN 或原版 PvpStats 的 `data.db`。
+- 普通用户不能在网站上传 `data.db`；只有管理员可在后台上传 PvpStatsCN 或原版 PvpStats 的历史数据库，并且必须指定现有目标角色与来源说明。
 - Go API 将文件写入随机隔离临时目录，再交给无网络、低权限、只读输入的 .NET Worker。
 - Worker 使用官方 LiteDB 库，只读取白名单集合并输出规范化 NDJSON。
 - 新版 PvpStatsCN 数据库中的身份集合也可导入；原版数据库没有身份集合时，只导入战绩。
@@ -172,7 +172,7 @@ GameAccount
 - `/api/v1/plugin/bind`：一次性绑定码兑换设备令牌。
 - `/api/v1/plugin/matches`：结算与关键时间线上传。
 - `/api/v1/plugin/identities`：身份观察增量同步。
-- `/api/v1/imports`：上传和查询 `data.db` 导入任务。
+- `/api/v1/admin/imports`：管理员上传和查询绑定目标角色的 `data.db` 导入任务。
 - `/api/v1/public/matches/{publicId}`：公开对局详情。
 - `/api/v1/public/players/search`：角色名与服务器查询。
 - `/api/v1/public/players/{publicId}`：账号级玩家档案。
