@@ -85,6 +85,7 @@ internal class WindowManager : IDisposable {
             } else {
                 _ = _plugin.WindowManager.RefreshAll();
             }
+            await _plugin.CloudUploads.ObserveCurrentCharacterAsync();
         });
     }
 

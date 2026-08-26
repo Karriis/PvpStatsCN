@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using PvpStats.Helpers;
+using PvpStats.Services.Cloud;
 using PvpStats.Settings;
 using PvpStats.Types.Player;
 using System;
@@ -32,6 +33,7 @@ internal class ConfigWindow : Window {
     private bool _confirmCloudUnbind;
     private string _cloudOwnershipCode = "";
     private bool _cloudOwnershipInProgress;
+    private string _cloudCharacterApprovalInProgress = "";
 
     public ConfigWindow(Plugin plugin) : base(Loc.T("PvP Tracker Settings")) {
         SizeConstraints = new WindowSizeConstraints {
@@ -181,6 +183,41 @@ internal class ConfigWindow : Window {
                         _ = _plugin.CloudUploads.EnqueueBacklogAsync();
                     }
                 }
+            }
+
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Character upload permissions"));
+            ImGui.TextWrapped(Loc.T("The primary character uploads automatically. A newly detected character stays only in the local database until you approve it here."));
+            var cloudCharacters = _plugin.CloudUploads.GetCharacterApprovals();
+            if(cloudCharacters.Count == 0) {
+                ImGui.TextDisabled(Loc.T("No cloud-upload character has been detected yet."));
+            }
+            foreach(var character in cloudCharacters) {
+                ImGui.PushID(character.Id);
+                var label = $"{character.Name} @ {character.World}";
+                if(character.IsPrimary) {
+                    ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), $"{label}  ·  {Loc.T("Primary character · automatic upload")}");
+                } else if(character.Status == CloudCharacterApprovalStatus.Approved) {
+                    ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), $"{label}  ·  {Loc.T("Upload approved")}");
+                } else {
+                    ImGui.TextColored(new Vector4(1f, 0.72f, 0.2f, 1f), $"{label}  ·  {Loc.T("Waiting for your approval · local only")}");
+                    ImGui.SameLine();
+                    var approving = _cloudCharacterApprovalInProgress == character.Id;
+                    using var disabledApproval = ImRaii.Disabled(approving);
+                    if(ImGui.SmallButton(approving ? Loc.T("Approving...") : Loc.T("Allow upload"))) {
+                        _cloudCharacterApprovalInProgress = character.Id;
+                        _cloudStatusMessage = Loc.T("Approving character uploads...");
+                        _ = Task.Run(async () => {
+                            var success = await _plugin.CloudUploads.ApproveCharacterAsync(character.Id);
+                            _cloudStatusMessage = Loc.T(success
+                                ? "Character approved. Saved matches are now queued for upload."
+                                : "Unable to approve this character.");
+                            _cloudCharacterApprovalInProgress = "";
+                        });
+                    }
+                }
+                ImGui.PopID();
             }
 
             ImGui.Spacing();

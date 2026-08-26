@@ -21,6 +21,7 @@ internal class StorageService {
     private const string AutoPlayerLinksTable = "playerlinks_auto";
     private const string ManualPlayerLinksTable = "playerlinks_manual";
     private const string CloudUploadsTable = "cloud_uploads";
+    private const string CloudCharacterApprovalsTable = "cloud_character_approvals";
     private const string PlayerIdentityTable = "playeridentity";
     private const string PlayerAliasObservationTable = "playeraliasobservation";
     private const string IdentitySyncStateTable = "identitysyncstate";
@@ -80,6 +81,7 @@ internal class StorageService {
         GetPlayerIdentities().EnsureIndex(identity => identity.LastObservedAt);
         GetPlayerAliasObservations().EnsureIndex(observation => observation.ContentId);
         GetIdentitySyncStates().EnsureIndex(state => state.Status);
+        GetCloudCharacterApprovals().EnsureIndex(character => character.Status);
     }
 
     public void Dispose() {
@@ -224,8 +226,59 @@ internal class StorageService {
         return Database.GetCollection<CloudUploadRecord>(CloudUploadsTable);
     }
 
+    internal ILiteCollection<CloudCharacterApprovalRecord> GetCloudCharacterApprovals() {
+        return Database.GetCollection<CloudCharacterApprovalRecord>(CloudCharacterApprovalsTable);
+    }
+
     internal async Task UpsertCloudUpload(CloudUploadRecord record) {
         await WriteToDatabase(() => GetCloudUploads().Upsert(record));
+    }
+
+    internal async Task<CloudCharacterApprovalRecord> ObserveCloudCharacter(string installationId, string key, string name, string world, string? contentId) {
+        CloudCharacterApprovalRecord? result = null;
+        await WriteToDatabase(() => {
+            var collection = GetCloudCharacterApprovals();
+            var now = DateTime.UtcNow;
+            result = collection.FindById(key);
+            if(result == null) {
+                var hasPrimary = collection.Exists(character => character.InstallationId == installationId && character.IsPrimary);
+                result = new CloudCharacterApprovalRecord {
+                    Id = key,
+                    InstallationId = installationId,
+                    Name = name,
+                    World = world,
+                    ContentId = contentId,
+                    IsPrimary = !hasPrimary,
+                    Status = hasPrimary ? CloudCharacterApprovalStatus.Pending : CloudCharacterApprovalStatus.Approved,
+                    FirstSeenAt = now,
+                    LastSeenAt = now,
+                    ApprovedAt = hasPrimary ? null : now,
+                };
+            } else {
+                result.Name = name;
+                result.World = world;
+                result.ContentId ??= contentId;
+                result.LastSeenAt = now;
+            }
+            collection.Upsert(result);
+            return result;
+        });
+        return result!;
+    }
+
+    internal async Task<bool> ApproveCloudCharacter(string key) {
+        var approved = false;
+        await WriteToDatabase(() => {
+            var collection = GetCloudCharacterApprovals();
+            var character = collection.FindById(key);
+            if(character == null) return false;
+            character.Status = CloudCharacterApprovalStatus.Approved;
+            character.ApprovedAt = DateTime.UtcNow;
+            character.LastSeenAt = DateTime.UtcNow;
+            approved = collection.Update(character);
+            return approved;
+        });
+        return approved;
     }
 
     internal ILiteCollection<PlayerIdentityRecord> GetPlayerIdentities() => Database.GetCollection<PlayerIdentityRecord>(PlayerIdentityTable);

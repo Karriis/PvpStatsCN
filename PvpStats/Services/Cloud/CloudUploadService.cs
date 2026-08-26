@@ -81,15 +81,40 @@ internal sealed class CloudUploadService : IDisposable {
     }
 
     private async Task<bool> EnqueueEnvelopeAsync(UploadEnvelopeV1 envelope, string sourceMatchId, UploadCredentials credentials) {
+        var localCharacter = FindLocalCharacter(envelope);
+        CloudCharacterApprovalRecord? characterApproval = null;
+        if(localCharacter != null) {
+            characterApproval = await _plugin.Storage.ObserveCloudCharacter(
+                credentials.InstallationId,
+                localCharacter.Key,
+                localCharacter.Name,
+                localCharacter.World,
+                localCharacter.ContentId);
+        }
+
+        var existing = _plugin.Storage.GetCloudUploads().FindById(sourceMatchId);
+        var record = existing ?? new CloudUploadRecord { Id = sourceMatchId, Status = CloudUploadStatus.Pending, CreatedAt = DateTime.UtcNow };
+        if(localCharacter != null) {
+            record.CharacterKey = localCharacter.Key;
+            record.CharacterName = localCharacter.Name;
+            record.CharacterWorld = localCharacter.World;
+        }
+        if(characterApproval?.Status == CloudCharacterApprovalStatus.Pending) {
+            record.Status = CloudUploadStatus.WaitingForCharacterApproval;
+            record.LastError = null;
+            await _plugin.Storage.UpsertCloudUpload(record);
+            _plugin.Log.Information($"Cloud upload for {sourceMatchId} is waiting for approval of character {localCharacter!.Name} {localCharacter.World}.");
+            _ = _plugin.Framework.RunOnFrameworkThread(() => _plugin.WindowManager.OpenConfigWindow());
+            return false;
+        }
+
         var observations = envelope.IdentityObservations ?? [];
         if(observations.Count > 0) {
             await _plugin.Storage.ObserveIdentities(observations, envelope.Client.GameVersion, envelope.Client.PluginVersion);
             envelope.IdentityObservations = null;
             await EnqueueIdentityBacklogAsync(credentials);
         }
-        var existing = _plugin.Storage.GetCloudUploads().FindById(sourceMatchId);
         if(existing?.Status == CloudUploadStatus.Uploaded) return true;
-        var record = existing ?? new CloudUploadRecord { Id = sourceMatchId, Status = CloudUploadStatus.Pending, CreatedAt = DateTime.UtcNow };
         record.Status = CloudUploadStatus.Pending; record.LastError = null;
         await _plugin.Storage.UpsertCloudUpload(record);
         var body = CloudUploadProtocol.SerializeAndCompress(envelope);
@@ -122,6 +147,54 @@ internal sealed class CloudUploadService : IDisposable {
         }
         foreach(var match in _plugin.RWCache.Matches.Where(match => pendingIds.Contains(match.Id.ToString()))) {
             await EnqueueAsync(match, _plugin.RWCache.GetTimeline(match) as RivalWingsMatchTimeline);
+        }
+    }
+
+    internal IReadOnlyList<CloudCharacterApprovalRecord> GetCharacterApprovals() {
+        return _plugin.Storage.GetCloudCharacterApprovals().FindAll()
+            .Where(character => character.InstallationId == _plugin.Configuration.CloudUploadInstallationId)
+            .OrderByDescending(character => character.IsPrimary)
+            .ThenBy(character => character.FirstSeenAt)
+            .ToList();
+    }
+
+    internal async Task<bool> ApproveCharacterAsync(string key) {
+        if(!await _plugin.Storage.ApproveCloudCharacter(key)) return false;
+        await EnqueueCharacterBacklogAsync(key);
+        return true;
+    }
+
+    private async Task EnqueueCharacterBacklogAsync(string key) {
+        if(!_plugin.Configuration.CloudUploadEnabled || !_plugin.Configuration.CloudUploadConsentAccepted) return;
+        var pendingIds = _plugin.Storage.GetCloudUploads().Find(record =>
+                record.CharacterKey == key && record.Status != CloudUploadStatus.Uploaded)
+            .Select(record => record.Id)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach(var match in _plugin.FLCache.Matches.Where(match => pendingIds.Contains(match.Id.ToString()))) {
+            await EnqueueAsync(match, _plugin.FLCache.GetTimeline(match) as FrontlineMatchTimeline);
+        }
+        foreach(var match in _plugin.CCCache.Matches.Where(match => pendingIds.Contains(match.Id.ToString()))) {
+            await EnqueueAsync(match, _plugin.CCCache.GetTimeline(match) as CrystallineConflictMatchTimeline);
+        }
+        foreach(var match in _plugin.RWCache.Matches.Where(match => pendingIds.Contains(match.Id.ToString()))) {
+            await EnqueueAsync(match, _plugin.RWCache.GetTimeline(match) as RivalWingsMatchTimeline);
+        }
+    }
+
+    internal async Task ObserveCurrentCharacterAsync() {
+        if(!_plugin.Configuration.CloudUploadEnabled || !_plugin.Configuration.CloudUploadConsentAccepted || !IsBound) return;
+        var current = _plugin.GameState.CurrentPlayer;
+        if(current == null || string.IsNullOrWhiteSpace(current.Name) || string.IsNullOrWhiteSpace(current.HomeWorld)) return;
+        var key = CreateCharacterKey(current.Name, current.HomeWorld);
+        var approval = await _plugin.Storage.ObserveCloudCharacter(
+            _plugin.Configuration.CloudUploadInstallationId,
+            key,
+            current.Name.Trim(),
+            current.HomeWorld.Trim(),
+            null);
+        if(approval.Status == CloudCharacterApprovalStatus.Pending) {
+            _plugin.Log.Information($"Character {approval.Name} {approval.World} is waiting for cloud upload approval.");
+            _ = _plugin.Framework.RunOnFrameworkThread(() => _plugin.WindowManager.OpenConfigWindow());
         }
     }
 
@@ -399,6 +472,38 @@ internal sealed class CloudUploadService : IDisposable {
         return TryGetApiEndpoint(CloudUploadProtocol.UploadPath, out endpoint);
     }
 
+    private LocalCloudCharacter? FindLocalCharacter(UploadEnvelopeV1 envelope) {
+        if(envelope.Matches.Count > 0) {
+            var match = envelope.Matches[0];
+            return Find(match.LocalPlayer, match.Players.Select(player => (player.Alias, player.ContentId)));
+        }
+        if(envelope.CrystallineConflictMatches is { Count: > 0 }) {
+            var match = envelope.CrystallineConflictMatches[0];
+            return Find(match.LocalPlayer, match.Players.Select(player => (player.Alias, player.ContentId)));
+        }
+        if(envelope.RivalWingsMatches is { Count: > 0 }) {
+            var match = envelope.RivalWingsMatches[0];
+            return Find(match.LocalPlayer, match.Players.Select(player => (player.Alias, player.ContentId)));
+        }
+        return null;
+    }
+
+    private LocalCloudCharacter? Find(UploadAliasV1? localPlayer, IEnumerable<(UploadAliasV1 Alias, string? ContentId)> players) {
+        if(localPlayer == null || string.IsNullOrWhiteSpace(localPlayer.Name) || string.IsNullOrWhiteSpace(localPlayer.HomeWorld)) return null;
+        var participant = players.FirstOrDefault(player =>
+            string.Equals(player.Alias.Name, localPlayer.Name, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(player.Alias.HomeWorld, localPlayer.HomeWorld, StringComparison.OrdinalIgnoreCase));
+        var name = localPlayer.Name.Trim();
+        var world = localPlayer.HomeWorld.Trim();
+        var key = CreateCharacterKey(name, world);
+        return new LocalCloudCharacter(key, name, world, participant.ContentId);
+    }
+
+    private string CreateCharacterKey(string name, string world) {
+        var installation = _plugin.Configuration.CloudUploadInstallationId.Trim();
+        return $"{installation}:alias:{name.Trim().ToUpperInvariant()}@{world.Trim().ToUpperInvariant()}";
+    }
+
     private bool TryGetApiEndpoint(string path, out Uri endpoint) {
         endpoint = null!;
         if(!Uri.TryCreate(_plugin.Configuration.CloudUploadApiBaseUrl, UriKind.Absolute, out var baseUri)) {
@@ -428,6 +533,7 @@ internal sealed class CloudUploadService : IDisposable {
     }
 
     private sealed record PendingUpload(byte[] Body, string PluginVersion, string BuildHash, string IdempotencyKey, string RecordId, string Path, IReadOnlyList<string>? IdentityObservationIds);
+    private sealed record LocalCloudCharacter(string Key, string Name, string World, string? ContentId);
     private sealed class CloudBindingResponse {
         public string InstallationId { get; init; } = "";
         public string AccountId { get; init; } = "";

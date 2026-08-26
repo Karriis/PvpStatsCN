@@ -6,7 +6,7 @@
   "InternalName": "PvpStatsCN",
   "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
   "ApplicableVersion": "any",
-  "Changelog": "* PvP Logs 云端协议扩展至水晶冲突、纷争前线和烈羽争锋，并上传玩法专属关键时间线。\n* 新增版本化身份观察、本地增量同步状态及 UsedName / PlayerTrack 曾用名批量同步。\n* 完整结算记录会携带加密签名所需的客户端与账号绑定信息；本地密钥继续由 Windows DPAPI 保护。\n* 上传失败仍保留本地战绩并进入补传队列，不影响插件原有统计功能。",
+  "Changelog": "* 新增多角色云端上传确认：主角色保持自动上传，其他角色必须逐个授权。\n* 未获授权角色的对局和身份信息只保存在本地数据库，不会提前发送到服务器。\n* 授权后自动补传该角色积压对局，并按插件绑定实例隔离角色授权状态。",
   "Tags": [
     "pvp",
     "statistics",

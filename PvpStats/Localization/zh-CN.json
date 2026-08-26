@@ -570,5 +570,16 @@
   "Use the manual tab to create player links by hand or to track un-covered auto link scenarios such as personal character alias changes, track known alt characters or to override mistakes.\n\nEnter format as <player name> <home world>": "在“手动”页签中手工建立玩家关联，可用于自己的角色改名、已知小号或修正自动关联错误。\n\n输入格式：<玩家名> <所在大区>",
   "Enabling these options will cache your entire match history in memory. Can help with refresh performance at the cost of increased memory usage.": "启用后会把全部对局历史缓存到内存，可提升刷新速度，但会占用更多内存。",
   "Disabling these features can help save disk space.": "关闭这些功能可以减少磁盘占用。",
-  "Unlike Crystalline Conflict and Frontline, the Rival Wings scoreboard is not typically received by the game client until ~9 seconds after the match has ended. To prevent players from prematurely leaving the duty and missing the scoreboard, the leave duty button is disabled during this brief window.\n\nYou may disable this feature here but be warned: Matches will not be recorded if the scoreboard payload is not received!": "与水晶冲突和纷争前线不同，烈羽争锋通常要在对局结束约 9 秒后才会收到计分板。为防止玩家过早退出而丢失计分板，这段时间内会暂时禁用退出按钮。\n\n可以在此关闭保护，但请注意：未收到计分板数据时，对局将不会被记录！"
+  "Unlike Crystalline Conflict and Frontline, the Rival Wings scoreboard is not typically received by the game client until ~9 seconds after the match has ended. To prevent players from prematurely leaving the duty and missing the scoreboard, the leave duty button is disabled during this brief window.\n\nYou may disable this feature here but be warned: Matches will not be recorded if the scoreboard payload is not received!": "与水晶冲突和纷争前线不同，烈羽争锋通常要在对局结束约 9 秒后才会收到计分板。为防止玩家过早退出而丢失计分板，这段时间内会暂时禁用退出按钮。\n\n可以在此关闭保护，但请注意：未收到计分板数据时，对局将不会被记录！",
+  "Character upload permissions": "角色上传权限",
+  "The primary character uploads automatically. A newly detected character stays only in the local database until you approve it here.": "主角色会自动上传。新检测到的其他角色在你确认前只保存在本地数据库中。",
+  "No cloud-upload character has been detected yet.": "暂未检测到启用云端上传的角色。",
+  "Primary character · automatic upload": "主角色 · 自动上传",
+  "Upload approved": "已允许上传",
+  "Waiting for your approval · local only": "等待确认 · 仅保存在本地",
+  "Approving...": "确认中……",
+  "Allow upload": "允许上传",
+  "Approving character uploads...": "正在确认角色上传权限……",
+  "Character approved. Saved matches are now queued for upload.": "已允许该角色上传，之前保存的对局正在排队补传。",
+  "Unable to approve this character.": "无法确认该角色的上传权限。"
 }
