@@ -29,6 +29,7 @@ internal sealed class CloudUploadService : IDisposable {
     private readonly Task _worker;
     private readonly object _identityQueueLock = new();
     private readonly HashSet<string> _queuedIdentityIds = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _claimedLoginContentIds = new(StringComparer.Ordinal);
     private bool _reportedNotReady;
 
     internal CloudUploadService(Plugin plugin) {
@@ -160,6 +161,10 @@ internal sealed class CloudUploadService : IDisposable {
 
     internal async Task<bool> ApproveCharacterAsync(string key) {
         if(!await _plugin.Storage.ApproveCloudCharacter(key)) return false;
+        var approved = _plugin.Storage.GetCloudCharacterApprovals().FindById(key);
+        if(approved != null && !string.IsNullOrWhiteSpace(approved.ContentId)) {
+            await ClaimLocalCharacterAsync(approved);
+        }
         await EnqueueCharacterBacklogAsync(key);
         return true;
     }
@@ -185,17 +190,62 @@ internal sealed class CloudUploadService : IDisposable {
         if(!_plugin.Configuration.CloudUploadEnabled || !_plugin.Configuration.CloudUploadConsentAccepted || !IsBound) return;
         var current = _plugin.GameState.CurrentPlayer;
         if(current == null || string.IsNullOrWhiteSpace(current.Name) || string.IsNullOrWhiteSpace(current.HomeWorld)) return;
+        var contentId = _plugin.PlayerState.ContentId;
+        var worldId = _plugin.PlayerState.HomeWorld.RowId;
+        if(contentId == 0 || worldId == 0) return;
         var key = CreateCharacterKey(current.Name, current.HomeWorld);
         var approval = await _plugin.Storage.ObserveCloudCharacter(
             _plugin.Configuration.CloudUploadInstallationId,
             key,
             current.Name.Trim(),
             current.HomeWorld.Trim(),
-            null);
+            contentId.ToString());
         if(approval.Status == CloudCharacterApprovalStatus.Pending) {
             _plugin.Log.Information($"Character {approval.Name} {approval.World} is waiting for cloud upload approval.");
             _ = _plugin.Framework.RunOnFrameworkThread(() => _plugin.WindowManager.OpenConfigWindow());
+            return;
         }
+        await ClaimLocalCharacterAsync(approval, worldId);
+    }
+
+    private async Task ClaimLocalCharacterAsync(CloudCharacterApprovalRecord character, uint worldId = 0, CancellationToken cancellationToken = default) {
+        if(!TryGetCredentials(out var credentials)
+            || !TryGetApiEndpoint(CloudUploadProtocol.LocalCharacterClaimPath, out var endpoint)
+            || string.IsNullOrWhiteSpace(character.ContentId)) return;
+        if(worldId == 0 && string.Equals(_plugin.GameState.CurrentPlayer?.Name, character.Name, StringComparison.OrdinalIgnoreCase)) {
+            worldId = _plugin.PlayerState.HomeWorld.RowId;
+        }
+        if(worldId == 0) return;
+        lock(_claimedLoginContentIds) {
+            if(!_claimedLoginContentIds.Add(character.ContentId)) return;
+        }
+        try {
+            var body = JsonSerializer.SerializeToUtf8Bytes(new {
+                contentId = character.ContentId,
+                name = character.Name,
+                world = character.World,
+                worldId,
+                observedAt = DateTime.UtcNow,
+            });
+            var pluginVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+            var buildHash = CloudUploadProtocol.GetClientBuildHash();
+            var nonce = Guid.NewGuid().ToString();
+            var idempotencyKey = $"local_character_{Guid.NewGuid():N}";
+            var signed = CloudUploadProtocol.Sign(body, credentials, pluginVersion, buildHash, DateTimeOffset.UtcNow, nonce, idempotencyKey, CloudUploadProtocol.LocalCharacterClaimPath);
+            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = new ByteArrayContent(body) };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            AddSignedHeaders(request, credentials, signed, nonce, pluginVersion, buildHash, idempotencyKey);
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
+            if(response.IsSuccessStatusCode) {
+                _plugin.Log.Information($"Claimed logged-in character {character.Name} {character.World} for the bound website account.");
+                return;
+            }
+            _plugin.Log.Warning($"Logged-in character claim was rejected with HTTP {(int)response.StatusCode}.");
+        } catch(OperationCanceledException) when(cancellationToken.IsCancellationRequested) {
+        } catch(Exception ex) {
+            _plugin.Log.Warning(ex, "Logged-in character claim failed.");
+        }
+        lock(_claimedLoginContentIds) { _claimedLoginContentIds.Remove(character.ContentId); }
     }
 
     private async Task EnqueueIdentityBacklogAsync(UploadCredentials credentials) {
@@ -307,6 +357,7 @@ internal sealed class CloudUploadService : IDisposable {
                 return new CloudBindingResult(false, "The server returned an invalid binding secret.");
             }
             SetCredentials(result.InstallationId, result.AccountId, result.KeyVersion.ToString(), secret);
+            await ObserveCurrentCharacterAsync();
             return new CloudBindingResult(true, "Plugin binding succeeded.");
         } catch(OperationCanceledException) when(cancellationToken.IsCancellationRequested) {
             return new CloudBindingResult(false, "Binding was cancelled.");
