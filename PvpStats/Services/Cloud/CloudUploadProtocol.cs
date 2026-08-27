@@ -14,7 +14,6 @@ internal static class CloudUploadProtocol {
     internal const string UploadPath = "/api/v1/plugin/uploads";
     internal const string IdentityUploadPath = "/api/v1/plugin/identities";
     internal const string OwnershipVerificationPath = "/api/v1/plugin/ownership-verifications";
-    internal const string LocalCharacterClaimPath = "/api/v1/plugin/local-character-claims";
 
     private static readonly JsonSerializerOptions JsonOptions = new() {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

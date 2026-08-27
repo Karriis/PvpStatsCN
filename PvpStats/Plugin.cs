@@ -41,7 +41,6 @@ public sealed class Plugin : IDalamudPlugin {
     private ICommandManager CommandManager { get; init; }
     internal IDataManager DataManager { get; init; }
     internal IClientState ClientState { get; init; }
-    internal IPlayerState PlayerState { get; init; }
     internal ICondition Condition { get; init; }
     internal IDutyState DutyState { get; init; }
     //internal IPartyList PartyList { get; init; }
@@ -86,7 +85,6 @@ public sealed class Plugin : IDalamudPlugin {
         ICommandManager commandManager,
         IDataManager dataManager,
         IClientState clientState,
-        IPlayerState playerState,
         ICondition condition,
         IDutyState dutyState,
         IPartyList partyList,
@@ -105,7 +103,6 @@ public sealed class Plugin : IDalamudPlugin {
             CommandManager = commandManager;
             DataManager = dataManager;
             ClientState = clientState;
-            PlayerState = playerState;
             Condition = condition;
             DutyState = dutyState;
             //PartyList = partyList;
