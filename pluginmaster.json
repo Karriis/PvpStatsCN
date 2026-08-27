@@ -3,7 +3,7 @@
     "Author": "SaMo, Karriis",
     "Name": "PvP 战绩统计（中文增强版）",
     "InternalName": "PvpStatsCN",
-    "AssemblyVersion": "2.7.0.7",
+    "AssemblyVersion": "2.7.0.8",
     "Description": "基于 PvP Tracker 的简体中文增强版本。记录、浏览和筛选水晶冲突、纷争前线及烈羽争锋的历史对局；查看对局计分板，以及胜率、场均伤害等汇总统计。重要：请在进入 PvP 对局前启用插件，进入对局后不要启用、禁用或重载插件。",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
@@ -20,12 +20,12 @@
     "LoadPriority": 0,
     "IconUrl": "https://raw.githubusercontent.com/Karriis/PvpStatsCN/main/images/icon.png",
     "Punchline": "记录并分析 PvP 对局与战绩。",
-    "Changelog": "* 新增多角色云端上传确认：主角色保持自动上传，其他角色必须逐个授权。\n* 未获授权角色的对局和身份信息只保存在本地数据库，不会提前发送到服务器。\n* 授权后自动补传该角色积压对局，并按插件绑定实例隔离角色授权状态。",
+    "Changelog": "* 新增登录即认领角色：绑定账号后，主角色登录即可归入网站账号，无需先完成一场对局。\n* 多角色继续逐个确认，未授权角色不会提交认领或上传数据。\n* 认领请求使用 HMAC、时间戳和一次性 Nonce；服务端可结合历史身份及对局来源交叉验证。",
     "AcceptsFeedback": true,
     "IsHide": false,
     "IsTestingExclusive": false,
     "DownloadLinkInstall": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
     "DownloadLinkUpdate": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
-    "LastUpdate": "1787734101"
+    "LastUpdate": "1787846577"
   }
 ]
