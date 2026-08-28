@@ -239,7 +239,9 @@ internal class StorageService {
         await WriteToDatabase(() => {
             var collection = GetCloudCharacterApprovals();
             var now = DateTime.UtcNow;
-            result = collection.FindById(key);
+            result = collection.FindOne(character =>
+                character.InstallationId == installationId &&
+                (character.Id == key || (contentId != null && character.ContentId == contentId)));
             if(result == null) {
                 var hasPrimary = collection.Exists(character => character.InstallationId == installationId && character.IsPrimary);
                 result = new CloudCharacterApprovalRecord {
@@ -249,10 +251,9 @@ internal class StorageService {
                     World = world,
                     ContentId = contentId,
                     IsPrimary = !hasPrimary,
-                    Status = hasPrimary ? CloudCharacterApprovalStatus.Pending : CloudCharacterApprovalStatus.Approved,
+                    Status = CloudCharacterApprovalStatus.Pending,
                     FirstSeenAt = now,
                     LastSeenAt = now,
-                    ApprovedAt = hasPrimary ? null : now,
                 };
             } else {
                 result.Name = name;

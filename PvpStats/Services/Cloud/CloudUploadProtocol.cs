@@ -11,9 +11,11 @@ namespace PvpStats.Services.Cloud;
 
 internal static class CloudUploadProtocol {
     internal const int SchemaVersion = 1;
+    internal const string ApiBaseUrl = "https://pvplogs.karriis.com/";
     internal const string UploadPath = "/api/v1/plugin/uploads";
     internal const string IdentityUploadPath = "/api/v1/plugin/identities";
     internal const string OwnershipVerificationPath = "/api/v1/plugin/ownership-verifications";
+    internal const string AccountProfilePath = "/api/v1/plugin/account-profile";
 
     private static readonly JsonSerializerOptions JsonOptions = new() {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

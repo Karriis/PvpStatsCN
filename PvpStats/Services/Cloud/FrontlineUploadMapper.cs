@@ -78,7 +78,7 @@ internal sealed class FrontlineUploadMapper {
                 Players = players,
                 Teams = match.Teams.Select(team => new FrontlineTeamV1 {
                     Team = MapTeam(team.Key),
-                    Placement = team.Value.Placement ?? 0,
+                    Placement = FrontlineUploadConventions.ToApiPlacement(team.Value.Placement),
                     TotalPoints = team.Value.TotalPoints,
                     KillPoints = team.Value.KillPoints,
                     DeathPointLosses = team.Value.DeathPointLosses,

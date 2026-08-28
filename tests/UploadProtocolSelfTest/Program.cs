@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 
 var secret = Encoding.UTF8.GetBytes("0123456789abcdef0123456789abcdef");
+AssertEqual("https://pvplogs.karriis.com/", CloudUploadProtocol.ApiBaseUrl, "fixed API base URL");
 var signed = CloudUploadProtocol.Sign(
     Encoding.UTF8.GetBytes("{\"ok\":true}"),
     new UploadCredentials("install_test", "account_test", "7", secret),
@@ -56,6 +57,10 @@ using var json = JsonDocument.Parse(gzip);
 AssertEqual(1, json.RootElement.GetProperty("schemaVersion").GetInt32(), "schema version");
 AssertEqual("2.7.0.4", json.RootElement.GetProperty("client").GetProperty("pluginVersion").GetString(), "camel-case JSON");
 AssertEqual(100L, json.RootElement.GetProperty("matches")[0].GetProperty("timeline").GetProperty("teamPoints")[0].GetProperty("points").GetInt64(), "timeline serialization");
+AssertEqual(1, FrontlineUploadConventions.ToApiPlacement(0), "first-place conversion");
+AssertEqual(2, FrontlineUploadConventions.ToApiPlacement(1), "second-place conversion");
+AssertEqual(3, FrontlineUploadConventions.ToApiPlacement(2), "third-place conversion");
+AssertThrows<InvalidOperationException>(() => FrontlineUploadConventions.ToApiPlacement(null), "missing placement rejection");
 
 var identityEnvelope = new UploadEnvelopeV1 {
     ExportedAt = DateTime.UnixEpoch,
@@ -91,4 +96,13 @@ static void AssertEqual<T>(T expected, T actual, string name) {
     if(!EqualityComparer<T>.Default.Equals(expected, actual)) {
         throw new InvalidOperationException($"Unexpected {name}: expected {expected}, got {actual}.");
     }
+}
+
+static void AssertThrows<TException>(Action action, string name) where TException : Exception {
+    try {
+        action();
+    } catch(TException) {
+        return;
+    }
+    throw new InvalidOperationException($"Expected {typeof(TException).Name} for {name}.");
 }

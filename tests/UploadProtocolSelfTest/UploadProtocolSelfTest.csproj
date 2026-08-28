@@ -9,5 +9,6 @@
     <Compile Include="../../PvpStats/Services/Cloud/UploadPayloadV1.cs" Link="UploadPayloadV1.cs" />
     <Compile Include="../../PvpStats/Services/Cloud/CloudUploadProtocol.cs" Link="CloudUploadProtocol.cs" />
     <Compile Include="../../PvpStats/Services/Cloud/CloudCredentialProtector.cs" Link="CloudCredentialProtector.cs" />
+    <Compile Include="../../PvpStats/Services/Cloud/FrontlineUploadConventions.cs" Link="FrontlineUploadConventions.cs" />
   </ItemGroup>
 </Project>

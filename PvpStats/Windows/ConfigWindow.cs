@@ -26,14 +26,12 @@ internal class ConfigWindow : Window {
 
     private float _saveOpacity = 0f;
     private bool _ipcUpdateInProgress = false;
-    private string _cloudApiUrl;
     private string _cloudBindingCode = "";
     private string _cloudStatusMessage = "";
     private bool _cloudBindingInProgress;
     private bool _confirmCloudUnbind;
     private string _cloudOwnershipCode = "";
     private bool _cloudOwnershipInProgress;
-    private string _cloudCharacterApprovalInProgress = "";
 
     public ConfigWindow(Plugin plugin) : base(Loc.T("PvP Tracker Settings")) {
         SizeConstraints = new WindowSizeConstraints {
@@ -41,7 +39,6 @@ internal class ConfigWindow : Window {
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
         _plugin = plugin;
-        _cloudApiUrl = plugin.Configuration.CloudUploadApiBaseUrl;
         _newManualLink = new();
         //_plugin.DataQueue.QueueDataOperation(Refresh);
     }
@@ -111,40 +108,34 @@ internal class ConfigWindow : Window {
 
     private void DrawCloudUploadSettings() {
         ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("PvP Logs Cloud"));
-        ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
-        ImGui.TextWrapped(Loc.T("Cloud upload is optional and disabled by default. Local match history continues to work without binding an account."));
-        ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1f, 0.72f, 0.2f, 1f), Loc.T("Before enabling cloud upload:"));
-        ImGui.BulletText(Loc.T("A complete Frontline result contains all participants, jobs, teams and scoreboard values."));
-        ImGui.BulletText(Loc.T("After consent, new results also retain Account ID and Content ID for identity matching."));
-        ImGui.BulletText(Loc.T("Validated matches may appear on public pages with privacy protection applied."));
-        ImGui.BulletText(Loc.T("You can stop future uploads here and request hiding or deletion through the website."));
-        ImGui.BulletText(Loc.T("Chat, debug logs, memory dumps and raw action telemetry are never uploaded."));
-        ImGui.PopTextWrapPos();
-        ImGui.Spacing();
-
         var consent = _plugin.Configuration.CloudUploadConsentAccepted;
-        if(ImGui.Checkbox(Loc.T("I understand the data scope and agree to cloud processing"), ref consent)) {
-            _plugin.Configuration.CloudUploadConsentAccepted = consent;
-            if(!consent) {
-                _plugin.Configuration.CloudUploadEnabled = false;
+        if(!consent) {
+            ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
+            ImGui.TextWrapped(Loc.T("Cloud upload is optional and disabled by default. Local match history continues to work without binding an account."));
+            ImGui.Spacing();
+            ImGui.TextColored(new Vector4(1f, 0.72f, 0.2f, 1f), Loc.T("Before enabling cloud upload:"));
+            ImGui.BulletText(Loc.T("A complete Frontline result contains all participants, jobs, teams and scoreboard values."));
+            ImGui.BulletText(Loc.T("After consent, new results also retain Account ID and Content ID for identity matching."));
+            ImGui.BulletText(Loc.T("Validated matches may appear on public pages with privacy protection applied."));
+            ImGui.BulletText(Loc.T("You can stop future uploads here and request hiding or deletion through the website."));
+            ImGui.BulletText(Loc.T("Chat, debug logs, memory dumps and raw action telemetry are never uploaded."));
+            ImGui.PopTextWrapPos();
+            ImGui.Spacing();
+            if(ImGui.Checkbox(Loc.T("I understand the data scope and agree to cloud processing"), ref consent)) {
+                _plugin.Configuration.CloudUploadConsentAccepted = consent;
+                _plugin.Configuration.Save();
             }
-            _plugin.Configuration.Save();
         }
 
         ImGui.Separator();
         ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Account binding"));
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-        if(ImGui.InputTextWithHint("###CloudApiUrl", Loc.T("API address (HTTPS)"), ref _cloudApiUrl, 256)) {
-            _plugin.Configuration.CloudUploadApiBaseUrl = _cloudApiUrl.Trim();
-        }
-        if(ImGui.IsItemDeactivatedAfterEdit()) {
-            _plugin.Configuration.Save();
-        }
 
         var bound = _plugin.CloudUploads.IsBound;
         if(bound) {
-            ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), Loc.T("Bound to account: {0}", _plugin.Configuration.CloudUploadAccountId));
+            var displayName = string.IsNullOrWhiteSpace(_plugin.Configuration.CloudUploadDisplayName)
+                ? _plugin.Configuration.CloudUploadAccountId
+                : _plugin.Configuration.CloudUploadDisplayName;
+            ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), Loc.T("Bound to account: {0}", displayName));
         } else {
             using var disabled = ImRaii.Disabled(!consent || _cloudBindingInProgress);
             ImGui.SetNextItemWidth(Math.Max(220f * ImGuiHelpers.GlobalScale, ImGui.GetContentRegionAvail().X - 130f * ImGuiHelpers.GlobalScale));
@@ -153,7 +144,6 @@ internal class ConfigWindow : Window {
             if(ImGui.Button(_cloudBindingInProgress ? Loc.T("Binding...") : Loc.T("Bind account"))) {
                 _cloudBindingInProgress = true;
                 _cloudStatusMessage = Loc.T("Connecting to binding service...");
-                _plugin.Configuration.CloudUploadApiBaseUrl = _cloudApiUrl.Trim();
                 _plugin.Configuration.Save();
                 _ = Task.Run(async () => {
                     var result = await _plugin.CloudUploads.BindAsync(_cloudBindingCode);
@@ -173,11 +163,11 @@ internal class ConfigWindow : Window {
         }
 
         if(bound) {
+            var primaryCharacter = _plugin.CloudUploads.GetPrimaryCharacter();
             var enabled = _plugin.Configuration.CloudUploadEnabled;
-            using(var disabled = ImRaii.Disabled(!consent)) {
+            using(var disabled = ImRaii.Disabled(!consent || primaryCharacter?.Status != CloudCharacterApprovalStatus.Approved)) {
                 if(ImGui.Checkbox(Loc.T("Automatically upload new completed Frontline matches"), ref enabled)) {
                     _plugin.Configuration.CloudUploadEnabled = enabled;
-                    _plugin.Configuration.CloudUploadApiBaseUrl = _cloudApiUrl.Trim();
                     _plugin.Configuration.Save();
                     if(enabled) {
                         _ = _plugin.CloudUploads.EnqueueBacklogAsync();
@@ -187,56 +177,41 @@ internal class ConfigWindow : Window {
 
             ImGui.Spacing();
             ImGui.Separator();
-            ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Character upload permissions"));
-            ImGui.TextWrapped(Loc.T("The primary character uploads automatically. A newly detected character stays only in the local database until you approve it here."));
-            var cloudCharacters = _plugin.CloudUploads.GetCharacterApprovals();
-            if(cloudCharacters.Count == 0) {
-                ImGui.TextDisabled(Loc.T("No cloud-upload character has been detected yet."));
-            }
-            foreach(var character in cloudCharacters) {
-                ImGui.PushID(character.Id);
-                var label = $"{character.Name} @ {character.World}";
-                if(character.IsPrimary) {
-                    ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), $"{label}  ·  {Loc.T("Primary character · automatic upload")}");
-                } else if(character.Status == CloudCharacterApprovalStatus.Approved) {
-                    ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), $"{label}  ·  {Loc.T("Upload approved")}");
-                } else {
-                    ImGui.TextColored(new Vector4(1f, 0.72f, 0.2f, 1f), $"{label}  ·  {Loc.T("Waiting for your approval · local only")}");
-                    ImGui.SameLine();
-                    var approving = _cloudCharacterApprovalInProgress == character.Id;
-                    using var disabledApproval = ImRaii.Disabled(approving);
-                    if(ImGui.SmallButton(approving ? Loc.T("Approving...") : Loc.T("Allow upload"))) {
-                        _cloudCharacterApprovalInProgress = character.Id;
-                        _cloudStatusMessage = Loc.T("Approving character uploads...");
-                        _ = Task.Run(async () => {
-                            var success = await _plugin.CloudUploads.ApproveCharacterAsync(character.Id);
-                            _cloudStatusMessage = Loc.T(success
-                                ? "Character approved. Saved matches are now queued for upload."
-                                : "Unable to approve this character.");
-                            _cloudCharacterApprovalInProgress = "";
-                        });
-                    }
+            ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Bound character"));
+            if(primaryCharacter == null) {
+                ImGui.TextDisabled(Loc.T("Log in with the character you use most. This account can bind only one character."));
+            } else {
+                var verified = primaryCharacter.Status == CloudCharacterApprovalStatus.Approved;
+                var color = verified
+                    ? new Vector4(0.35f, 0.85f, 0.45f, 1f)
+                    : new Vector4(1f, 0.75f, 0.25f, 1f);
+                ImGui.TextColored(color, $"{primaryCharacter.Name} @ {primaryCharacter.World}  ·  {Loc.T(verified ? "Verified" : "Waiting for verification")}");
+                if(!_plugin.CloudUploads.IsCurrentCharacterPrimary()) {
+                    ImGui.TextColored(new Vector4(1f, 0.45f, 0.35f, 1f), Loc.T("The current character is not the bound character. Cloud upload is paused; local match recording is unaffected."));
+                } else if(!verified) {
+                    ImGui.TextWrapped(Loc.T("Generate a verification code for this character on the website. Matches remain local until verification succeeds."));
                 }
-                ImGui.PopID();
             }
 
-            ImGui.Spacing();
-            ImGui.Separator();
-            ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Character ownership verification"));
-            ImGui.TextWrapped(Loc.T("Generate a verification code on the website account page, then enter it here while this bound plugin is running."));
-            using(var disabled = ImRaii.Disabled(_cloudOwnershipInProgress)) {
-                ImGui.SetNextItemWidth(Math.Max(220f * ImGuiHelpers.GlobalScale, ImGui.GetContentRegionAvail().X - 130f * ImGuiHelpers.GlobalScale));
-                ImGui.InputTextWithHint("###CloudOwnershipCode", Loc.T("Verification code"), ref _cloudOwnershipCode, 32);
-                ImGui.SameLine();
-                if(ImGui.Button(_cloudOwnershipInProgress ? Loc.T("Verifying...") : Loc.T("Verify character"))) {
-                    _cloudOwnershipInProgress = true;
-                    _cloudStatusMessage = Loc.T("Verifying character ownership...");
-                    _ = Task.Run(async () => {
-                        var result = await _plugin.CloudUploads.VerifyOwnershipAsync(_cloudOwnershipCode);
-                        _cloudStatusMessage = Loc.T(result.Message);
-                        if(result.Success) _cloudOwnershipCode = "";
-                        _cloudOwnershipInProgress = false;
-                    });
+            if(primaryCharacter?.Status != CloudCharacterApprovalStatus.Approved) {
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Character ownership verification"));
+                ImGui.TextWrapped(Loc.T("Generate a verification code on the website account page, then enter it here while this bound plugin is running."));
+                using(var disabled = ImRaii.Disabled(_cloudOwnershipInProgress || primaryCharacter == null)) {
+                    ImGui.SetNextItemWidth(Math.Max(220f * ImGuiHelpers.GlobalScale, ImGui.GetContentRegionAvail().X - 130f * ImGuiHelpers.GlobalScale));
+                    ImGui.InputTextWithHint("###CloudOwnershipCode", Loc.T("Verification code"), ref _cloudOwnershipCode, 32);
+                    ImGui.SameLine();
+                    if(ImGui.Button(_cloudOwnershipInProgress ? Loc.T("Verifying...") : Loc.T("Verify character"))) {
+                        _cloudOwnershipInProgress = true;
+                        _cloudStatusMessage = Loc.T("Verifying character ownership...");
+                        _ = Task.Run(async () => {
+                            var result = await _plugin.CloudUploads.VerifyOwnershipAsync(_cloudOwnershipCode);
+                            _cloudStatusMessage = Loc.T(result.Message);
+                            if(result.Success) _cloudOwnershipCode = "";
+                            _cloudOwnershipInProgress = false;
+                        });
+                    }
                 }
             }
 
@@ -258,6 +233,17 @@ internal class ConfigWindow : Window {
                 }
             }
         }
+
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Historical match import"));
+        ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
+        ImGui.TextWrapped(Loc.T("To request an import of historical matches from data.db, attach the file to an email sent to:"));
+        ImGui.PopTextWrapPos();
+        ImGui.TextUnformatted("pvp@karriis.com");
+        ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
+        ImGui.TextWrapped(Loc.T("Include your character name and region in the message. We will verify the data before importing it."));
+        ImGui.PopTextWrapPos();
     }
 
     private void DrawInterfaceSettings() {

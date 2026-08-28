@@ -34,9 +34,18 @@ public class Configuration : IPluginConfiguration {
     // Cloud uploads are opt-in. The secret is encrypted with Windows DPAPI for the current user.
     public bool CloudUploadEnabled { get; set; } = false;
     public bool CloudUploadConsentAccepted { get; set; } = false;
+    public bool CloudOnboardingConsentDecided { get; set; } = false;
+    public bool CloudOnboardingCharacterDecided { get; set; } = false;
+    public string CloudSelectedCharacterName { get; set; } = "";
+    public string CloudSelectedCharacterWorld { get; set; } = "";
+    public uint CloudSelectedCharacterWorldId { get; set; }
+    public string CloudSelectedCharacterContentId { get; set; } = "";
+    // Retained only to migrate credentials issued by older configurable endpoints.
+    // Runtime requests always use CloudUploadProtocol.ApiBaseUrl.
     public string CloudUploadApiBaseUrl { get; set; } = "";
     public string CloudUploadInstallationId { get; set; } = "";
     public string CloudUploadAccountId { get; set; } = "";
+    public string CloudUploadDisplayName { get; set; } = "";
     public string CloudUploadKeyVersion { get; set; } = "";
     public string CloudUploadProtectedSecret { get; set; } = "";
 

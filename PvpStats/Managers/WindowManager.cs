@@ -31,6 +31,7 @@ internal class WindowManager : IDisposable {
     internal RWTrackerWindow RWTrackerWindow { get; private set; }
     internal ConfigWindow ConfigWindow { get; private set; }
     internal SplashWindow SplashWindow { get; private set; }
+    internal CloudOnboardingWindow CloudOnboardingWindow { get; private set; }
 #if DEBUG
     internal DebugWindow? DebugWindow { get; private set; }
 #endif
@@ -46,11 +47,13 @@ internal class WindowManager : IDisposable {
         RWTrackerWindow = new(plugin);
         ConfigWindow = new(plugin);
         SplashWindow = new(plugin);
+        CloudOnboardingWindow = new(plugin);
         WindowSystem.AddWindow(CCTrackerWindow);
         WindowSystem.AddWindow(FLTrackerWindow);
         WindowSystem.AddWindow(RWTrackerWindow);
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(SplashWindow);
+        WindowSystem.AddWindow(CloudOnboardingWindow);
 
 #if DEBUG
         DebugWindow = new(plugin);
@@ -114,6 +117,11 @@ internal class WindowManager : IDisposable {
     }
 
     internal void OpenSplashWindow() {
+        if(CloudOnboardingWindow.OpenIfRequired()) return;
+        SplashWindow.IsOpen = true;
+    }
+
+    internal void OpenSplashWindowDirect() {
         SplashWindow.IsOpen = true;
     }
 
