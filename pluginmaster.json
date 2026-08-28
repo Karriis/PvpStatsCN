@@ -3,7 +3,7 @@
     "Author": "SaMo, Karriis",
     "Name": "PvP 战绩统计（中文增强版）",
     "InternalName": "PvpStatsCN",
-    "AssemblyVersion": "2.7.0.9",
+    "AssemblyVersion": "2.7.0.11",
     "Description": "基于 PvP Tracker 的简体中文增强版本。记录、浏览和筛选水晶冲突、纷争前线及烈羽争锋的历史对局；查看对局计分板，以及胜率、场均伤害等汇总统计。重要：请在进入 PvP 对局前启用插件，进入对局后不要启用、禁用或重载插件。",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
@@ -26,6 +26,6 @@
     "IsTestingExclusive": false,
     "DownloadLinkInstall": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
     "DownloadLinkUpdate": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
-    "LastUpdate": "1787847598"
+    "LastUpdate": "1787925066"
   }
 ]
