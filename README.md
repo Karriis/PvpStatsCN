@@ -1,7 +1,7 @@
 # PvP Tracker
 <img src="https://raw.githubusercontent.com/wrath16/PvpStats/master/images/icon.png" width="256" height="256">
 
-## PvP 战绩统计（中文增强版）
+## PVPLogsCN
 
 本仓库是 [wrath16/PvpStats](https://github.com/wrath16/PvpStats) 的简体中文增强版本，保留原项目的 MIT License 与原作者署名。
 
@@ -11,7 +11,7 @@
 https://raw.githubusercontent.com/Karriis/PvpStatsCN/main/pluginmaster.json
 ```
 
-在 Dalamud 设置的 `Experimental` → `Custom Plugin Repositories` 中添加上述地址，然后在插件安装器中搜索“PvP 战绩统计（中文增强版）”。安装前请先禁用或卸载原版 `PvP Tracker`，避免双方注册相同的聊天命令。首次启动时，如果新插件目录尚无数据，会复制原版 `PvpStats` 的战绩数据库和设置；不会覆盖已经存在的 `PvpStatsCN` 数据。
+在 Dalamud 设置的 `Experimental` → `Custom Plugin Repositories` 中添加上述地址，然后在插件安装器中搜索“PVPLogsCN”。安装前请先禁用或卸载原版 `PvP Tracker`，避免双方注册相同的聊天命令。首次启动时，如果新插件目录尚无数据，会复制原版 `PvpStats` 的战绩数据库和设置；不会覆盖已经存在的 `PvpStatsCN` 数据。
 
 ### 本地构建
 

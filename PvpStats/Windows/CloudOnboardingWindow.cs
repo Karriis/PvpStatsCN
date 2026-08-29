@@ -2,6 +2,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using PvpStats.Helpers;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace PvpStats.Windows;
@@ -9,7 +10,7 @@ namespace PvpStats.Windows;
 internal sealed class CloudOnboardingWindow : Window {
     private readonly Plugin _plugin;
 
-    internal CloudOnboardingWindow(Plugin plugin) : base(Loc.T("PvP Logs Cloud Agreement")) {
+    internal CloudOnboardingWindow(Plugin plugin) : base(Loc.T("PVPLogsCN Cloud Setup")) {
         _plugin = plugin;
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(520, 360),
@@ -29,27 +30,30 @@ internal sealed class CloudOnboardingWindow : Window {
 
     public override void Draw() {
         if(!_plugin.Configuration.CloudOnboardingConsentDecided) {
-            DrawAgreement();
+            DrawWebsitePolicyStep();
             return;
         }
         DrawCharacterChoice();
     }
 
-    private void DrawAgreement() {
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Optional cloud service"));
+    private void DrawWebsitePolicyStep() {
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Read the privacy policy on the website"));
         ImGui.Spacing();
         ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
-        ImGui.TextWrapped(Loc.T("PvP Logs cloud upload is optional. If you decline, every original local feature of the plugin remains available."));
+        ImGui.TextWrapped(Loc.T("The complete PVPLogsCN privacy policy and consent confirmation are provided on the website. Sign in, read the current policy, and confirm it before generating a binding code."));
         ImGui.Spacing();
-        ImGui.BulletText(Loc.T("Completed matches include participants, jobs, teams and scoreboard values."));
-        ImGui.BulletText(Loc.T("Account ID and Content ID are used only to identify the selected character."));
-        ImGui.BulletText(Loc.T("After character verification, new matches are uploaded automatically and displayed publicly by default."));
-        ImGui.BulletText(Loc.T("You can request hiding through the website at any time."));
-        ImGui.BulletText(Loc.T("Chat, debug logs, memory dumps and raw action telemetry are never uploaded."));
+        ImGui.TextWrapped(Loc.T("If you do not enable the cloud service, every original local feature remains available."));
         ImGui.PopTextWrapPos();
 
+        if(ImGui.Button(Loc.T("Open privacy policy"))) {
+            Process.Start(new ProcessStartInfo {
+                UseShellExecute = true,
+                FileName = "https://pvplogs.karriis.com/privacy-policy",
+            });
+        }
+
         ImGui.SetCursorPosY(ImGui.GetContentRegionMax().Y - 42f * ImGuiHelpers.GlobalScale);
-        if(ImGui.Button(Loc.T("Decline · use local features only"))) {
+        if(ImGui.Button(Loc.T("Use local features only"))) {
             _plugin.Configuration.CloudOnboardingConsentDecided = true;
             _plugin.Configuration.CloudOnboardingCharacterDecided = true;
             _plugin.Configuration.CloudUploadConsentAccepted = false;
@@ -59,9 +63,8 @@ internal sealed class CloudOnboardingWindow : Window {
             _plugin.WindowManager.OpenSplashWindowDirect();
         }
         ImGui.SameLine();
-        if(ImGui.Button(Loc.T("I have read and agree"))) {
+        if(ImGui.Button(Loc.T("Continue to character selection"))) {
             _plugin.Configuration.CloudOnboardingConsentDecided = true;
-            _plugin.Configuration.CloudUploadConsentAccepted = true;
             _plugin.Configuration.Save();
         }
     }

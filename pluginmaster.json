@@ -1,10 +1,10 @@
 [
   {
     "Author": "SaMo, Karriis",
-    "Name": "PvP 战绩统计（中文增强版）",
+    "Name": "PvPLogs (CN)",
     "InternalName": "PvpStatsCN",
-    "AssemblyVersion": "2.7.0.11",
-    "Description": "基于 PvP Tracker 的简体中文增强版本。记录、浏览和筛选水晶冲突、纷争前线及烈羽争锋的历史对局；查看对局计分板，以及胜率、场均伤害等汇总统计。重要：请在进入 PvP 对局前启用插件，进入对局后不要启用、禁用或重载插件。",
+    "AssemblyVersion": "2.7.0.12",
+    "Description": "基于 PvP Tracker 的简体中文增强版本。记录、浏览和筛选水晶冲突、纷争前线及烈羽争锋的历史对局；查看对局计分板，以及胜率、场均伤害等汇总统计。",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
     "Tags": [
@@ -19,13 +19,13 @@
     "CanUnloadAsync": false,
     "LoadPriority": 0,
     "IconUrl": "https://raw.githubusercontent.com/Karriis/PvpStatsCN/main/images/icon.png",
-    "Punchline": "记录并分析 PvP 对局与战绩。",
-    "Changelog": "* 恢复完整对局认领流程：角色必须先完成并成功上传一场对局，才会归入网站账号。\n* 保留网站验证码二次验证，插件输入验证码后角色升级为所有权已验证。\n* 移除登录即认领，避免仅凭可修改客户端上报直接建立角色归属。",
+    "Punchline": "记录并分析《最终幻想XIV》国服 PvP 对局与战绩。",
+    "Changelog": "* 插件更名为 PvPLogs (CN)，更新插件简介。\n* 完整隐私政策与同意确认移至 PVPLogsCN 网站，插件窗口仅保留跳转和绑定流程。\n* 网站确认当前政策后才可生成绑定码，插件绑定成功后启用云端上传。",
     "AcceptsFeedback": true,
     "IsHide": false,
     "IsTestingExclusive": false,
     "DownloadLinkInstall": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
     "DownloadLinkUpdate": "https://github.com/Karriis/PvpStatsCN/releases/latest/download/latest.zip",
-    "LastUpdate": "1787925066"
+    "LastUpdate": "1788012780"
   }
 ]

@@ -9,6 +9,7 @@ using PvpStats.Settings;
 using PvpStats.Types.Player;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
@@ -107,37 +108,31 @@ internal class ConfigWindow : Window {
     }
 
     private void DrawCloudUploadSettings() {
-        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("PvP Logs Cloud"));
-        var consent = _plugin.Configuration.CloudUploadConsentAccepted;
-        if(!consent) {
+        ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("PVPLogsCN Cloud"));
+        var bound = _plugin.CloudUploads.IsBound;
+        if(!bound) {
             ImGui.PushTextWrapPos(ImGui.GetContentRegionMax().X);
-            ImGui.TextWrapped(Loc.T("Cloud upload is optional and disabled by default. Local match history continues to work without binding an account."));
-            ImGui.Spacing();
-            ImGui.TextColored(new Vector4(1f, 0.72f, 0.2f, 1f), Loc.T("Before enabling cloud upload:"));
-            ImGui.BulletText(Loc.T("A complete Frontline result contains all participants, jobs, teams and scoreboard values."));
-            ImGui.BulletText(Loc.T("After consent, new results also retain Account ID and Content ID for identity matching."));
-            ImGui.BulletText(Loc.T("Validated matches may appear on public pages with privacy protection applied."));
-            ImGui.BulletText(Loc.T("You can stop future uploads here and request hiding or deletion through the website."));
-            ImGui.BulletText(Loc.T("Chat, debug logs, memory dumps and raw action telemetry are never uploaded."));
+            ImGui.TextWrapped(Loc.T("Read and accept the current privacy policy on the PVPLogsCN website before generating a binding code. Local match history remains available without cloud binding."));
             ImGui.PopTextWrapPos();
             ImGui.Spacing();
-            if(ImGui.Checkbox(Loc.T("I understand the data scope and agree to cloud processing"), ref consent)) {
-                _plugin.Configuration.CloudUploadConsentAccepted = consent;
-                _plugin.Configuration.Save();
+            if(ImGui.Button(Loc.T("Open privacy policy"))) {
+                Process.Start(new ProcessStartInfo {
+                    UseShellExecute = true,
+                    FileName = "https://pvplogs.karriis.com/privacy-policy",
+                });
             }
         }
 
         ImGui.Separator();
         ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Account binding"));
 
-        var bound = _plugin.CloudUploads.IsBound;
         if(bound) {
             var displayName = string.IsNullOrWhiteSpace(_plugin.Configuration.CloudUploadDisplayName)
                 ? _plugin.Configuration.CloudUploadAccountId
                 : _plugin.Configuration.CloudUploadDisplayName;
             ImGui.TextColored(new Vector4(0.35f, 0.85f, 0.45f, 1f), Loc.T("Bound to account: {0}", displayName));
         } else {
-            using var disabled = ImRaii.Disabled(!consent || _cloudBindingInProgress);
+            using var disabled = ImRaii.Disabled(_cloudBindingInProgress);
             ImGui.SetNextItemWidth(Math.Max(220f * ImGuiHelpers.GlobalScale, ImGui.GetContentRegionAvail().X - 130f * ImGuiHelpers.GlobalScale));
             ImGui.InputTextWithHint("###CloudBindingCode", Loc.T("Binding code"), ref _cloudBindingCode, 32);
             ImGui.SameLine();
@@ -165,7 +160,7 @@ internal class ConfigWindow : Window {
         if(bound) {
             var primaryCharacter = _plugin.CloudUploads.GetPrimaryCharacter();
             var enabled = _plugin.Configuration.CloudUploadEnabled;
-            using(var disabled = ImRaii.Disabled(!consent || primaryCharacter?.Status != CloudCharacterApprovalStatus.Approved)) {
+            using(var disabled = ImRaii.Disabled(primaryCharacter?.Status != CloudCharacterApprovalStatus.Approved)) {
                 if(ImGui.Checkbox(Loc.T("Automatically upload new completed Frontline matches"), ref enabled)) {
                     _plugin.Configuration.CloudUploadEnabled = enabled;
                     _plugin.Configuration.Save();

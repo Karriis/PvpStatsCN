@@ -380,9 +380,7 @@ internal sealed class CloudUploadService : IDisposable {
         if(current == null || string.IsNullOrWhiteSpace(current.Name) || string.IsNullOrWhiteSpace(current.HomeWorld)) {
             return new CloudBindingResult(false, "Log in with the character you use most before binding. This account can bind only one character.");
         }
-        if(!_plugin.Configuration.CloudOnboardingConsentDecided ||
-           !_plugin.Configuration.CloudUploadConsentAccepted ||
-           !_plugin.Configuration.CloudOnboardingCharacterDecided ||
+        if(!_plugin.Configuration.CloudOnboardingCharacterDecided ||
            string.IsNullOrWhiteSpace(_plugin.Configuration.CloudSelectedCharacterName) ||
            string.IsNullOrWhiteSpace(_plugin.Configuration.CloudSelectedCharacterContentId)) {
             return new CloudBindingResult(false, "Complete the cloud agreement and select your character before binding.");
@@ -423,6 +421,8 @@ internal sealed class CloudUploadService : IDisposable {
             if(secret.Length < 32) {
                 return new CloudBindingResult(false, "The server returned an invalid binding secret.");
             }
+            _plugin.Configuration.CloudUploadConsentAccepted = true;
+            _plugin.Configuration.CloudOnboardingConsentDecided = true;
             SetCredentials(result.InstallationId, result.AccountId, result.DisplayName, result.KeyVersion.ToString(), secret);
             await _plugin.Storage.ObserveCloudCharacter(
                 result.InstallationId,
