@@ -47,10 +47,6 @@ internal sealed class FrontlineUploadMapper {
             })
             .ToList();
 
-        if(match.PlayerCount != players.Count) {
-            throw new InvalidOperationException($"Player count {match.PlayerCount} does not match the {players.Count} result rows.");
-        }
-
         return new UploadEnvelopeV1 {
             ExportedAt = DateTime.UtcNow,
             Client = new UploadClientV1 {
@@ -73,7 +69,9 @@ internal sealed class FrontlineUploadMapper {
                 DataCenter = NullIfWhiteSpace(match.DataCenter),
                 GameVersion = gameVersion,
                 PluginVersion = pluginVersion,
-                PlayerCount = match.PlayerCount,
+                // The result packet can contain empty rows for players who
+                // disconnected before the scoreboard was produced.
+                PlayerCount = players.Count,
                 LocalPlayer = match.LocalPlayer == null ? null : MapAlias(match.LocalPlayer, worlds),
                 Players = players,
                 Teams = match.Teams.Select(team => new FrontlineTeamV1 {

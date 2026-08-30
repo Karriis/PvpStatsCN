@@ -1,7 +1,10 @@
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using PvpStats.Types.Match;
 using PvpStats.Types.Match.Timeline;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -30,6 +33,8 @@ internal sealed class CloudUploadService : IDisposable {
     private readonly Task _accountProfileWorker;
     private readonly object _identityQueueLock = new();
     private readonly HashSet<string> _queuedIdentityIds = new(StringComparer.Ordinal);
+    private readonly HashSet<uint> _chatLinkHandlers = [];
+    private int _nextChatLinkId = 1000;
     private bool _reportedNotReady;
 
     internal CloudUploadService(Plugin plugin) {
@@ -76,7 +81,7 @@ internal sealed class CloudUploadService : IDisposable {
 
             var envelope = _mapper.Map(match, timeline);
             var sourceMatchId = envelope.Matches[0].SourceMatchId;
-            return await EnqueueEnvelopeAsync(envelope, sourceMatchId, credentials);
+            return await EnqueueEnvelopeAsync(envelope, sourceMatchId, credentials, "纷争前线");
         } catch(Exception ex) {
             _plugin.Log.Warning(ex, $"Frontline match {match.Id} was not queued for cloud upload.");
             return false;
@@ -88,7 +93,7 @@ internal sealed class CloudUploadService : IDisposable {
         try {
             if(!TryGetEndpoint(out _) || !TryGetCredentials(out var credentials)) return false;
             var envelope = _ccMapper.Map(match, timeline);
-            return await EnqueueEnvelopeAsync(envelope, envelope.CrystallineConflictMatches![0].SourceMatchId, credentials);
+            return await EnqueueEnvelopeAsync(envelope, envelope.CrystallineConflictMatches![0].SourceMatchId, credentials, "水晶冲突");
         } catch(Exception ex) { _plugin.Log.Warning(ex, $"Crystalline Conflict match {match.Id} was not queued for cloud upload."); return false; }
     }
 
@@ -97,11 +102,11 @@ internal sealed class CloudUploadService : IDisposable {
         try {
             if(!TryGetEndpoint(out _) || !TryGetCredentials(out var credentials)) return false;
             var envelope = _rwMapper.Map(match, timeline);
-            return await EnqueueEnvelopeAsync(envelope, envelope.RivalWingsMatches![0].SourceMatchId, credentials);
+            return await EnqueueEnvelopeAsync(envelope, envelope.RivalWingsMatches![0].SourceMatchId, credentials, "烈羽争锋");
         } catch(Exception ex) { _plugin.Log.Warning(ex, $"Rival Wings match {match.Id} was not queued for cloud upload."); return false; }
     }
 
-    private async Task<bool> EnqueueEnvelopeAsync(UploadEnvelopeV1 envelope, string sourceMatchId, UploadCredentials credentials) {
+    private async Task<bool> EnqueueEnvelopeAsync(UploadEnvelopeV1 envelope, string sourceMatchId, UploadCredentials credentials, string matchLabel) {
         var localCharacter = FindLocalCharacter(envelope);
         CloudCharacterApprovalRecord? character = null;
         if(localCharacter != null) {
@@ -121,9 +126,6 @@ internal sealed class CloudUploadService : IDisposable {
             record.CharacterWorld = localCharacter.World;
         }
 
-        // One website account owns exactly one character. The first completed match for the
-        // primary character is allowed through only to establish a pending website claim.
-        // Nothing else is uploaded until the ownership code has been verified.
         if(character == null || !character.IsPrimary) {
             record.Status = CloudUploadStatus.WaitingForCharacterApproval;
             record.LastError = "This is not the character bound to this website account.";
@@ -148,7 +150,7 @@ internal sealed class CloudUploadService : IDisposable {
         await _plugin.Storage.UpsertCloudUpload(record);
         var body = CloudUploadProtocol.SerializeAndCompress(envelope);
         var idempotencyKey = CloudUploadProtocol.CreateIdempotencyKey(credentials.InstallationId, sourceMatchId);
-        await _queue.Writer.WriteAsync(new PendingUpload(body, envelope.Client.PluginVersion, envelope.Client.BuildHash, idempotencyKey, sourceMatchId, CloudUploadProtocol.UploadPath, null), _shutdown.Token);
+        await _queue.Writer.WriteAsync(new PendingUpload(body, envelope.Client.PluginVersion, envelope.Client.BuildHash, idempotencyKey, sourceMatchId, CloudUploadProtocol.UploadPath, null, matchLabel), _shutdown.Token);
         return true;
     }
 
@@ -211,16 +213,24 @@ internal sealed class CloudUploadService : IDisposable {
     }
 
     internal async Task ObserveCurrentCharacterAsync() {
-        if(!_plugin.Configuration.CloudUploadEnabled || !_plugin.Configuration.CloudUploadConsentAccepted || !IsBound) return;
+        if(!_plugin.Configuration.CloudUploadConsentAccepted || !IsBound) return;
         var current = _plugin.GameState.CurrentPlayer;
         if(current == null || string.IsNullOrWhiteSpace(current.Name) || string.IsNullOrWhiteSpace(current.HomeWorld)) return;
         var key = CreateCharacterKey(current.Name, current.HomeWorld);
-        await _plugin.Storage.ObserveCloudCharacter(
+        var character = await _plugin.Storage.ObserveCloudCharacter(
             _plugin.Configuration.CloudUploadInstallationId,
             key,
             current.Name.Trim(),
             current.HomeWorld.Trim(),
             null);
+        if(character.IsPrimary && character.Status != CloudCharacterApprovalStatus.Approved) {
+            await _plugin.Storage.ApproveCloudCharacter(character.Id);
+        }
+        if(character.IsPrimary && !_plugin.Configuration.CloudUploadEnabled) {
+            _plugin.Configuration.CloudUploadEnabled = true;
+            _plugin.Configuration.Save();
+            await EnqueueCharacterBacklogAsync(character.Id);
+        }
     }
 
     internal CloudCharacterApprovalRecord? GetPrimaryCharacter() {
@@ -269,7 +279,7 @@ internal sealed class CloudUploadService : IDisposable {
         var body = CloudUploadProtocol.SerializeAndCompress(envelope);
         var idempotencyKey = CloudUploadProtocol.CreateIdempotencyKey(credentials.InstallationId, "identity:" + string.Join(',', ids));
         try {
-            await _queue.Writer.WriteAsync(new PendingUpload(body, pluginVersion, buildHash, idempotencyKey, idempotencyKey, CloudUploadProtocol.IdentityUploadPath, ids), _shutdown.Token);
+            await _queue.Writer.WriteAsync(new PendingUpload(body, pluginVersion, buildHash, idempotencyKey, idempotencyKey, CloudUploadProtocol.IdentityUploadPath, ids, null), _shutdown.Token);
         } catch {
             RemoveQueuedIdentities(ids);
             throw;
@@ -330,44 +340,6 @@ internal sealed class CloudUploadService : IDisposable {
         }
     }
 
-    internal async Task<CloudBindingResult> VerifyOwnershipAsync(string code, CancellationToken cancellationToken = default) {
-        if(!TryGetCredentials(out var credentials) || !TryGetApiEndpoint(CloudUploadProtocol.OwnershipVerificationPath, out var endpoint)) {
-            return new CloudBindingResult(false, "Bind the plugin to your website account first.");
-        }
-        code = code.Trim();
-        if(string.IsNullOrWhiteSpace(code)) {
-            return new CloudBindingResult(false, "Enter the ownership verification code generated by the website.");
-        }
-        try {
-            var body = JsonSerializer.SerializeToUtf8Bytes(new { code });
-            var pluginVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
-            var buildHash = CloudUploadProtocol.GetClientBuildHash();
-            var nonce = Guid.NewGuid().ToString();
-            var idempotencyKey = $"ownership_{Guid.NewGuid():N}";
-            var signed = CloudUploadProtocol.Sign(body, credentials, pluginVersion, buildHash, DateTimeOffset.UtcNow, nonce, idempotencyKey, CloudUploadProtocol.OwnershipVerificationPath);
-            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = new ByteArrayContent(body) };
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            AddSignedHeaders(request, credentials, signed, nonce, pluginVersion, buildHash, idempotencyKey);
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
-            if(response.IsSuccessStatusCode) {
-                var primary = GetPrimaryCharacter();
-                if(primary == null || !await _plugin.Storage.ApproveCloudCharacter(primary.Id)) {
-                    return new CloudBindingResult(false, "The website verified the character, but the local character lock could not be updated.");
-                }
-                _plugin.Configuration.CloudUploadEnabled = true;
-                _plugin.Configuration.Save();
-                await EnqueueCharacterBacklogAsync(primary.Id);
-                return new CloudBindingResult(true, "Character ownership verification succeeded. Refresh the website account page.");
-            }
-            return new CloudBindingResult(false, response.StatusCode == HttpStatusCode.UnprocessableEntity ? "The verification code is invalid, expired, or already used." : "The verification service rejected the request.");
-        } catch(OperationCanceledException) when(cancellationToken.IsCancellationRequested) {
-            return new CloudBindingResult(false, "Verification was cancelled.");
-        } catch(Exception ex) {
-            _plugin.Log.Warning(ex, "Character ownership verification failed.");
-            return new CloudBindingResult(false, "Unable to reach the verification service. Try again later.");
-        }
-    }
-
     internal async Task<CloudBindingResult> BindAsync(string code, CancellationToken cancellationToken = default) {
         if(!TryGetApiEndpoint("/api/v1/plugin/bind", out var endpoint)) {
             return new CloudBindingResult(false, "Enter a valid HTTPS API address first.");
@@ -424,13 +396,19 @@ internal sealed class CloudUploadService : IDisposable {
             _plugin.Configuration.CloudUploadConsentAccepted = true;
             _plugin.Configuration.CloudOnboardingConsentDecided = true;
             SetCredentials(result.InstallationId, result.AccountId, result.DisplayName, result.KeyVersion.ToString(), secret);
-            await _plugin.Storage.ObserveCloudCharacter(
+            var character = await _plugin.Storage.ObserveCloudCharacter(
                 result.InstallationId,
                 CreateCharacterKey(current.Name, current.HomeWorld),
                 current.Name.Trim(),
                 current.HomeWorld.Trim(),
                 _plugin.Configuration.CloudSelectedCharacterContentId);
-            return new CloudBindingResult(true, "Plugin binding succeeded. Generate a character verification code on the website and enter it here.");
+            if(!await _plugin.Storage.ApproveCloudCharacter(character.Id)) {
+                return new CloudBindingResult(false, "Binding succeeded, but the local character state could not be updated.");
+            }
+            _plugin.Configuration.CloudUploadEnabled = true;
+            _plugin.Configuration.Save();
+            await EnqueueBacklogAsync();
+            return new CloudBindingResult(true, "Plugin binding succeeded. Automatic match upload is enabled.");
         } catch(OperationCanceledException) when(cancellationToken.IsCancellationRequested) {
             return new CloudBindingResult(false, "Binding was cancelled.");
         } catch(Exception ex) {
@@ -455,6 +433,19 @@ internal sealed class CloudUploadService : IDisposable {
         _plugin.Configuration.CloudUploadProtectedSecret = "";
         _plugin.Configuration.Save();
         _reportedNotReady = false;
+    }
+
+    internal void ResetOnboarding() {
+        if(IsBound) return;
+        _plugin.Configuration.CloudUploadEnabled = false;
+        _plugin.Configuration.CloudUploadConsentAccepted = false;
+        _plugin.Configuration.CloudOnboardingConsentDecided = false;
+        _plugin.Configuration.CloudOnboardingCharacterDecided = false;
+        _plugin.Configuration.CloudSelectedCharacterName = "";
+        _plugin.Configuration.CloudSelectedCharacterWorld = "";
+        _plugin.Configuration.CloudSelectedCharacterWorldId = 0;
+        _plugin.Configuration.CloudSelectedCharacterContentId = "";
+        _plugin.Configuration.Save();
     }
 
     private async Task RunAsync() {
@@ -482,15 +473,42 @@ internal sealed class CloudUploadService : IDisposable {
                 }
                 await RecordAttemptAsync(pending);
                 using var request = CreateRequest(endpoint, credentials, pending);
-                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-                if(response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Conflict) {
+                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                if(response.IsSuccessStatusCode) {
+                    if(pending.IdentityObservationIds is { Count: > 0 }) {
+                        await RecordUploadedAsync(pending);
+                        _plugin.Log.Information($"Cloud upload completed for {pending.RecordId}.");
+                        return;
+                    }
+                    var accepted = JsonSerializer.Deserialize<CloudUploadAcceptedResponse>(responseBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if(accepted == null || string.IsNullOrWhiteSpace(accepted.UploadId)) {
+                        lastError = "服务器未返回上传编号";
+                        await RecordFailedAsync(pending, lastError);
+                        PrintUploadFailure(pending, lastError);
+                        return;
+                    }
+                    var finalStatus = await WaitForUploadStatusAsync(accepted.UploadId, credentials, pending, cancellationToken);
+                    if(finalStatus?.Status == "completed" && finalStatus.ProcessingStatus == "published" && !string.IsNullOrWhiteSpace(finalStatus.PublicMatchId)) {
+                        await RecordUploadedAsync(pending);
+                        PrintUploadSuccess(pending, finalStatus.PublicMatchId);
+                        _plugin.Log.Information($"Cloud upload completed for {pending.RecordId} as {finalStatus.PublicMatchId}.");
+                        return;
+                    }
+                    lastError = FriendlyStatusError(finalStatus);
+                    await RecordFailedAsync(pending, lastError);
+                    PrintUploadFailure(pending, lastError);
+                    return;
+                }
+                if(response.StatusCode == HttpStatusCode.Conflict) {
                     await RecordUploadedAsync(pending);
-                    _plugin.Log.Information($"Cloud upload completed for {pending.RecordId}.");
+                    _plugin.Log.Information($"Cloud upload was already accepted for {pending.RecordId}.");
                     return;
                 }
                 if((int)response.StatusCode is >= 400 and < 500 && response.StatusCode != HttpStatusCode.TooManyRequests) {
-                    lastError = $"HTTP {(int)response.StatusCode}";
+                    lastError = FriendlyHttpError(response.StatusCode, responseBody);
                     await RecordFailedAsync(pending, lastError);
+                    PrintUploadFailure(pending, lastError);
                     _plugin.Log.Warning($"Cloud upload rejected {pending.RecordId}: {lastError}.");
                     return;
                 }
@@ -504,6 +522,83 @@ internal sealed class CloudUploadService : IDisposable {
             }
         }
         await RecordFailedAsync(pending, lastError ?? "Upload attempts exhausted.");
+        PrintUploadFailure(pending, lastError ?? "多次重试后仍无法连接上传服务器");
+    }
+
+    private async Task<CloudUploadStatusResponse?> WaitForUploadStatusAsync(string uploadId, UploadCredentials credentials, PendingUpload pending, CancellationToken cancellationToken) {
+        var path = $"/api/v1/plugin/uploads/{Uri.EscapeDataString(uploadId)}";
+        if(!TryGetApiEndpoint(path, out var endpoint)) return null;
+        for(var attempt = 0; attempt < 20; attempt++) {
+            if(attempt > 0) await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+            var body = Array.Empty<byte>();
+            var nonce = Guid.NewGuid().ToString();
+            var idempotencyKey = $"status_{Guid.NewGuid():N}";
+            var signed = CloudUploadProtocol.Sign(body, credentials, pending.PluginVersion, pending.BuildHash, DateTimeOffset.UtcNow, nonce, idempotencyKey, path, "GET");
+            using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            AddSignedHeaders(request, credentials, signed, nonce, pending.PluginVersion, pending.BuildHash, idempotencyKey);
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
+            if(!response.IsSuccessStatusCode) continue;
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            var status = JsonSerializer.Deserialize<CloudUploadStatusResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if(status == null) continue;
+            if(status.Status is "completed" or "rejected" or "failed") return status;
+        }
+        return null;
+    }
+
+    private static string FriendlyStatusError(CloudUploadStatusResponse? status) {
+        if(status == null) return "服务器已接收，但等待处理结果超时，请稍后重试";
+        if(status.Status == "completed") {
+            return status.ProcessingStatus switch {
+                "suspicious" => "服务器发现对局数据互相冲突，暂未公开",
+                "rejected" => "服务器判定这场对局无效",
+                _ => "服务器已接收对局，但暂未生成公开战绩",
+            };
+        }
+        return status.RejectionCode switch {
+            "CHARACTER_NOT_BOUND" => "当前角色与网站绑定角色不一致",
+            "INVALID_PAYLOAD" => "对局数据格式不完整",
+            "UPLOAD_TOO_LARGE" => "对局数据超过服务器大小限制",
+            _ => $"服务器处理失败（{(string.IsNullOrWhiteSpace(status.RejectionCode) ? status.Status : status.RejectionCode)}）",
+        };
+    }
+
+    private static string FriendlyHttpError(HttpStatusCode statusCode, string body) {
+        try {
+            var error = JsonSerializer.Deserialize<CloudErrorResponse>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if(!string.IsNullOrWhiteSpace(error?.Message)) return error.Message;
+        } catch(JsonException) {
+        }
+        return statusCode switch {
+            HttpStatusCode.Unauthorized => "账号绑定已失效，请重新绑定",
+            HttpStatusCode.RequestEntityTooLarge => "对局数据超过服务器大小限制",
+            HttpStatusCode.UnprocessableEntity => "对局数据格式不完整",
+            _ => $"服务器拒绝了上传（HTTP {(int)statusCode}）",
+        };
+    }
+
+    private void PrintUploadSuccess(PendingUpload pending, string publicMatchId) {
+        if(string.IsNullOrWhiteSpace(pending.MatchLabel)) return;
+        var url = $"https://pvplogs.karriis.com/matches/{publicMatchId}";
+        _ = _plugin.Framework.RunOnFrameworkThread(() => {
+            var commandId = unchecked((uint)Interlocked.Increment(ref _nextChatLinkId));
+            var link = _plugin.ChatGui.AddChatLinkHandler(commandId, (_, _) => {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            });
+            lock(_chatLinkHandlers) _chatLinkHandlers.Add(commandId);
+            var message = new SeStringBuilder()
+                .AddText($"已成功上传{pending.MatchLabel}对局：")
+                .Add(link)
+                .AddText("查看战绩")
+                .Add(RawPayload.LinkTerminator)
+                .Build();
+            _plugin.ChatGui.Print(message, "PvpStatsCN");
+        });
+    }
+
+    private void PrintUploadFailure(PendingUpload pending, string reason) {
+        if(string.IsNullOrWhiteSpace(pending.MatchLabel)) return;
+        _ = _plugin.Framework.RunOnFrameworkThread(() => _plugin.ChatGui.PrintError($"{pending.MatchLabel}对局上传失败：{reason}", "PvpStatsCN"));
     }
 
     private async Task RecordAttemptAsync(PendingUpload pending) {
@@ -653,11 +748,15 @@ internal sealed class CloudUploadService : IDisposable {
             _accountProfileWorker.Wait(TimeSpan.FromSeconds(2));
         } catch(AggregateException) {
         }
+        lock(_chatLinkHandlers) {
+            foreach(var commandId in _chatLinkHandlers) _plugin.ChatGui.RemoveChatLinkHandler(commandId);
+            _chatLinkHandlers.Clear();
+        }
         _shutdown.Dispose();
         _httpClient.Dispose();
     }
 
-    private sealed record PendingUpload(byte[] Body, string PluginVersion, string BuildHash, string IdempotencyKey, string RecordId, string Path, IReadOnlyList<string>? IdentityObservationIds);
+    private sealed record PendingUpload(byte[] Body, string PluginVersion, string BuildHash, string IdempotencyKey, string RecordId, string Path, IReadOnlyList<string>? IdentityObservationIds, string? MatchLabel);
     private sealed record LocalCloudCharacter(string Key, string Name, string World, string? ContentId);
     private sealed class CloudBindingResponse {
         public string InstallationId { get; init; } = "";
@@ -668,6 +767,18 @@ internal sealed class CloudUploadService : IDisposable {
     }
     private sealed class CloudAccountProfileResponse {
         public string DisplayName { get; init; } = "";
+    }
+    private sealed class CloudUploadAcceptedResponse {
+        public string UploadId { get; init; } = "";
+    }
+    private sealed class CloudUploadStatusResponse {
+        public string Status { get; init; } = "";
+        public string RejectionCode { get; init; } = "";
+        public string PublicMatchId { get; init; } = "";
+        public string ProcessingStatus { get; init; } = "";
+    }
+    private sealed class CloudErrorResponse {
+        public string Message { get; init; } = "";
     }
 }
 

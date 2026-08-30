@@ -31,8 +31,6 @@ internal class ConfigWindow : Window {
     private string _cloudStatusMessage = "";
     private bool _cloudBindingInProgress;
     private bool _confirmCloudUnbind;
-    private string _cloudOwnershipCode = "";
-    private bool _cloudOwnershipInProgress;
 
     public ConfigWindow(Plugin plugin) : base(Loc.T("PvP Tracker Settings")) {
         SizeConstraints = new WindowSizeConstraints {
@@ -121,6 +119,12 @@ internal class ConfigWindow : Window {
                     FileName = "https://pvplogs.karriis.com/privacy-policy",
                 });
             }
+            ImGui.SameLine();
+            if(ImGui.Button(Loc.T("Restart login setup"))) {
+                _plugin.CloudUploads.ResetOnboarding();
+                _plugin.WindowManager.OpenCloudOnboardingWindow();
+                IsOpen = false;
+            }
         }
 
         ImGui.Separator();
@@ -184,29 +188,7 @@ internal class ConfigWindow : Window {
                 if(!_plugin.CloudUploads.IsCurrentCharacterPrimary()) {
                     ImGui.TextColored(new Vector4(1f, 0.45f, 0.35f, 1f), Loc.T("The current character is not the bound character. Cloud upload is paused; local match recording is unaffected."));
                 } else if(!verified) {
-                    ImGui.TextWrapped(Loc.T("Generate a verification code for this character on the website. Matches remain local until verification succeeds."));
-                }
-            }
-
-            if(primaryCharacter?.Status != CloudCharacterApprovalStatus.Approved) {
-                ImGui.Spacing();
-                ImGui.Separator();
-                ImGui.TextColored(_plugin.Configuration.Colors.Header, Loc.T("Character ownership verification"));
-                ImGui.TextWrapped(Loc.T("Generate a verification code on the website account page, then enter it here while this bound plugin is running."));
-                using(var disabled = ImRaii.Disabled(_cloudOwnershipInProgress || primaryCharacter == null)) {
-                    ImGui.SetNextItemWidth(Math.Max(220f * ImGuiHelpers.GlobalScale, ImGui.GetContentRegionAvail().X - 130f * ImGuiHelpers.GlobalScale));
-                    ImGui.InputTextWithHint("###CloudOwnershipCode", Loc.T("Verification code"), ref _cloudOwnershipCode, 32);
-                    ImGui.SameLine();
-                    if(ImGui.Button(_cloudOwnershipInProgress ? Loc.T("Verifying...") : Loc.T("Verify character"))) {
-                        _cloudOwnershipInProgress = true;
-                        _cloudStatusMessage = Loc.T("Verifying character ownership...");
-                        _ = Task.Run(async () => {
-                            var result = await _plugin.CloudUploads.VerifyOwnershipAsync(_cloudOwnershipCode);
-                            _cloudStatusMessage = Loc.T(result.Message);
-                            if(result.Success) _cloudOwnershipCode = "";
-                            _cloudOwnershipInProgress = false;
-                        });
-                    }
+                    ImGui.TextWrapped(Loc.T("The bound character will be approved automatically after login."));
                 }
             }
 

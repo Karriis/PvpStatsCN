@@ -116,6 +116,10 @@ internal class WindowManager : IDisposable {
         ConfigWindow.IsOpen = true;
     }
 
+    internal void OpenCloudOnboardingWindow() {
+        CloudOnboardingWindow.IsOpen = true;
+    }
+
     internal void OpenSplashWindow() {
         if(CloudOnboardingWindow.OpenIfRequired()) return;
         SplashWindow.IsOpen = true;

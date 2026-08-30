@@ -14,7 +14,6 @@ internal static class CloudUploadProtocol {
     internal const string ApiBaseUrl = "https://pvplogs.karriis.com/";
     internal const string UploadPath = "/api/v1/plugin/uploads";
     internal const string IdentityUploadPath = "/api/v1/plugin/identities";
-    internal const string OwnershipVerificationPath = "/api/v1/plugin/ownership-verifications";
     internal const string AccountProfilePath = "/api/v1/plugin/account-profile";
 
     private static readonly JsonSerializerOptions JsonOptions = new() {
@@ -36,13 +35,13 @@ internal static class CloudUploadProtocol {
         return $"mvid:{mvid}";
     }
 
-    internal static SignedUploadRequest Sign(byte[] body, UploadCredentials credentials, string pluginVersion, string buildHash, DateTimeOffset now, string nonce, string idempotencyKey, string path = UploadPath) {
+    internal static SignedUploadRequest Sign(byte[] body, UploadCredentials credentials, string pluginVersion, string buildHash, DateTimeOffset now, string nonce, string idempotencyKey, string path = UploadPath, string method = "POST") {
         RejectLineBreaks(credentials.InstallationId, credentials.AccountId, credentials.KeyVersion, pluginVersion, buildHash, nonce, idempotencyKey);
         var timestamp = now.ToUnixTimeSeconds().ToString();
         var bodyHash = Convert.ToHexStringLower(SHA256.HashData(body));
         var canonical = string.Join('\n',
             "PVPLOGS-HMAC-V1",
-            "POST",
+            method,
             path,
             credentials.InstallationId,
             credentials.AccountId,
