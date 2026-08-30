@@ -36,6 +36,19 @@ jobs:
       - name: 构建 Release 插件包
         run: dotnet build PvpStats.sln --configuration Release
 
+      - name: 校验版本更新日志
+        shell: pwsh
+        run: |
+          $manifest = Get-Content -LiteralPath './PvpStats/bin/x64/Release/PvpStatsCN/PvpStatsCN.json' -Raw | ConvertFrom-Json
+          $published = (Get-Content -LiteralPath './pluginmaster.json' -Raw | ConvertFrom-Json)[0]
+
+          if(
+            $manifest.AssemblyVersion -ne $published.AssemblyVersion -and
+            $manifest.Changelog.Trim() -eq $published.Changelog.Trim()
+          ) {
+            throw "插件版本已从 $($published.AssemblyVersion) 更新到 $($manifest.AssemblyVersion)，但 Changelog 未更新。"
+          }
+
       - name: 生成插件仓库清单
         shell: pwsh
         run: |

@@ -6,7 +6,7 @@
   "InternalName": "PvpStatsCN",
   "RepoUrl": "https://github.com/Karriis/PvpStatsCN",
   "ApplicableVersion": "any",
-  "Changelog": "* 插件更名为 PvPLogs (CN)，更新插件简介。\n* 完整隐私政策与同意确认移至 PVPLogsCN 网站，插件窗口仅保留跳转和绑定流程。\n* 网站确认当前政策后才可生成绑定码，插件绑定成功后启用云端上传。",
+  "Changelog": "* 缺员的纷争前线战绩现在会按完整正常对局上传，不再因玩家数量不足被插件拒绝。\n* 云端上传完成后会在聊天框显示结果与可点击的战绩链接；失败时会提示清晰的错误原因。\n* 简化账号绑定流程，移除角色码二次验证，并增加重置登录引导入口。",
   "Tags": [
     "pvp",
     "statistics",
